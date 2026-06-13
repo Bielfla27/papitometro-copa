@@ -1,0 +1,234 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #111111;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.date-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.date-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.date-scroll::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
+}
+
+.date-card {
+  min-width: 90px;
+  height: 90px;
+
+  background: #0f0f0f;
+  border: 1px solid #2b2b2b;
+  border-radius: 10px;
+
+  color: white;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  transition: 0.2s;
+}
+
+.date-card:hover {
+  border-color: #d4a72c;
+}
+
+.date-card span {
+  font-size: 11px;
+  color: #a9a9a9;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.date-number {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.date-card small {
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.date-card.active {
+  background: #d4a72c;
+  color: #111;
+}
+
+.date-card.active span {
+  color: #111;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.team img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 2fr 320px;
+  gap: 24px;
+}
+
+.games-area {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.games-area h2 {
+  margin-bottom: 20px;
+}
+
+.titulo-data {
+  margin-bottom: 25px;
+
+  text-align: center;
+
+  color: #d4a72c;
+
+  font-size: 24px;
+  font-weight: bold;
+
+  letter-spacing: 1px;
+}
+
+.game-card {
+  width: 100%;
+  max-width: 900px;
+}
+
+.game-card {
+  background: #101010;
+  border-radius: 10px;
+
+  padding: 18px;
+  margin-bottom: 12px;
+
+  display: grid;
+  grid-template-columns: 80px 1fr 55px 20px 55px 1fr;
+
+  align-items: center;
+  gap: 12px;
+}
+
+.time {
+  color: #aaa;
+  font-size: 13px;
+}
+
+.game-card strong {
+  text-align: center;
+}
+
+.game-card input {
+  width: 50px;
+  height: 42px;
+
+  background: #050505;
+  border: 1px solid #333;
+  border-radius: 8px;
+
+  color: white;
+  font-size: 20px;
+  text-align: center;
+}
+
+.game-card input:focus {
+  outline: none;
+  border-color: #d4a72c;
+}
+
+.versus {
+  color: #888;
+  text-align: center;
+}
+
+.save-button {
+  display: block;
+  margin: 28px auto 0;
+
+  width: 260px;
+  height: 52px;
+
+  background: #c99b22;
+  color: white;
+
+  border: none;
+  border-radius: 8px;
+
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.ranking {
+  background: #111;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.ranking h2 {
+  color: #d4a72c;
+  margin-bottom: 18px;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+
+  padding: 14px 0;
+  border-bottom: 1px solid #252525;
+
+  align-items: center;
+}
+
+.ranking-row span {
+  color: #aaa;
+}
+
+.ranking-row b {
+  color: #d4a72c;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}
