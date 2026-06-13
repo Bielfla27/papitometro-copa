@@ -63,4 +63,11 @@ public class UsuarioService {
     public void delete(Long id) {
         repository.deleteById(id);
     }
+    
+    public UsuarioDTO login(UsuarioDTO dto) {
+        Usuario usuario = repository.findByEmailAndSenha(dto.getEmail(), dto.getSenha())
+                .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
+
+        return new UsuarioDTO(usuario);
+    }
 }

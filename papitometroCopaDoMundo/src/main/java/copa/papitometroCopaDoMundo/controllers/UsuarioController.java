@@ -10,6 +10,7 @@ import copa.papitometroCopaDoMundo.services.UsuarioService;
 
 @RestController
 @RequestMapping("/usuarios")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
     @Autowired
@@ -38,5 +39,10 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+    
+    @PostMapping("/login")
+    public UsuarioDTO login(@RequestBody UsuarioDTO dto) {
+        return service.login(dto);
     }
 }

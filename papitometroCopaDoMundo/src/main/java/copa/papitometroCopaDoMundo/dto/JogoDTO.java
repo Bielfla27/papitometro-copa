@@ -14,7 +14,9 @@ public class JogoDTO {
     private Integer golsFora;
     private String escudoTimeCasa;
     private String escudoTimeFora;
+  
 
+	private String status;
    
 
 	public JogoDTO() {
@@ -23,7 +25,7 @@ public class JogoDTO {
     public JogoDTO(Long id, String timeCasa, String timeFora,
                    LocalDateTime dataHora,
                    Integer golsCasa,
-                   Integer golsFora, String escudoTimeCasa, String escudoTimeFora) {
+                   Integer golsFora, String escudoTimeCasa, String escudoTimeFora,String status) {
 
         this.id = id;
         this.timeCasa = timeCasa;
@@ -33,6 +35,7 @@ public class JogoDTO {
         this.golsFora = golsFora;
         this.escudoTimeCasa = escudoTimeCasa;
         this.escudoTimeFora = escudoTimeFora;
+        this.status = status;
     }
     
     public JogoDTO(Jogo entity) {
@@ -44,6 +47,7 @@ public class JogoDTO {
         this.golsFora = entity.getGolsFora();
         this.escudoTimeCasa = entity.getEscudoTimeCasa();
         this.escudoTimeFora = entity.getEscudoTimeFora();
+        this.status = entity.getStatus();
     }
 
     public Long getId() {
@@ -108,5 +112,13 @@ public class JogoDTO {
 
 	public void setEscudoTimeFora(String escudoTimeFora) {
 		this.escudoTimeFora = escudoTimeFora;
+	}
+	
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 }

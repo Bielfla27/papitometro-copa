@@ -32,91 +32,99 @@ public class ImportarJogosService implements CommandLineRunner {
     private String url;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
 
-        RestTemplate restTemplate = new RestTemplate();
+        try {
+            RestTemplate restTemplate = new RestTemplate();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Auth-Token", token);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-Auth-Token", token);
+            headers.set("User-Agent", "Mozilla/5.0");
 
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<JsonNode> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                JsonNode.class
-        );
+            ResponseEntity<JsonNode> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    JsonNode.class
+            );
 
-        JsonNode body = response.getBody();
+            JsonNode body = response.getBody();
 
-        if (body == null || body.get("matches") == null) {
-            System.out.println("Nenhum jogo encontrado na API.");
-            return;
+            if (body == null || body.get("matches") == null) {
+                System.out.println("Nenhum jogo encontrado na API.");
+                return;
+            }
+
+            JsonNode matches = body.get("matches");
+
+            for (JsonNode match : matches) {
+
+                Long apiId = match.get("id").asLong();
+
+                if (jogoRepository.existsByApiId(apiId)) {
+                    continue;
+                }
+
+                String timeCasa = match.get("homeTeam").get("name").isNull()
+                        ? "Não definido"
+                        : match.get("homeTeam").get("name").asText();
+
+                String timeFora = match.get("awayTeam").get("name").isNull()
+                        ? "Não definido"
+                        : match.get("awayTeam").get("name").asText();
+
+                String escudoTimeCasa = match.get("homeTeam").get("crest").isNull()
+                        ? null
+                        : match.get("homeTeam").get("crest").asText();
+
+                String escudoTimeFora = match.get("awayTeam").get("crest").isNull()
+                        ? null
+                        : match.get("awayTeam").get("crest").asText();
+
+                String utcDate = match.get("utcDate").asText();
+
+                LocalDateTime dataHora = OffsetDateTime
+                        .parse(utcDate)
+                        .atZoneSameInstant(ZoneId.of("America/Sao_Paulo"))
+                        .toLocalDateTime();
+
+                Integer golsCasa = null;
+                Integer golsFora = null;
+
+                String status = match.get("status").asText();
+
+                JsonNode fullTime = match.get("score").get("fullTime");
+
+                if (fullTime.get("home") != null && !fullTime.get("home").isNull()) {
+                    golsCasa = fullTime.get("home").asInt();
+                }
+
+                if (fullTime.get("away") != null && !fullTime.get("away").isNull()) {
+                    golsFora = fullTime.get("away").asInt();
+                }
+
+                Jogo jogo = new Jogo();
+
+                jogo.setApiId(apiId);
+                jogo.setTimeCasa(timeCasa);
+                jogo.setTimeFora(timeFora);
+                jogo.setDataHora(dataHora);
+                jogo.setGolsCasa(golsCasa);
+                jogo.setGolsFora(golsFora);
+                jogo.setEscudoTimeCasa(escudoTimeCasa);
+                jogo.setEscudoTimeFora(escudoTimeFora);
+                jogo.setStatus(status);
+
+                jogoRepository.save(jogo);
+            }
+
+            System.out.println("Jogos importados com sucesso!");
+
+        } catch (Exception e) {
+            System.out.println("Não foi possível importar os jogos agora.");
+            System.out.println("Motivo: " + e.getMessage());
         }
-
-        JsonNode matches = body.get("matches");
-
-        for (JsonNode match : matches) {
-
-            Long apiId = match.get("id").asLong();
-
-            if (jogoRepository.existsByApiId(apiId)) {
-                continue;
-            }
-
-            String timeCasa = match.get("homeTeam").get("name").isNull()
-                    ? "Não definido"
-                    : match.get("homeTeam").get("name").asText();
-
-            String timeFora = match.get("awayTeam").get("name").isNull()
-                    ? "Não definido"
-                    : match.get("awayTeam").get("name").asText();
-
-            String escudoTimeCasa = match.get("homeTeam").get("crest").isNull()
-                    ? null
-                    : match.get("homeTeam").get("crest").asText();
-
-            String escudoTimeFora = match.get("awayTeam").get("crest").isNull()
-                    ? null
-                    : match.get("awayTeam").get("crest").asText();
-            
-
-            String utcDate = match.get("utcDate").asText();
-
-            LocalDateTime dataHora = OffsetDateTime
-                    .parse(utcDate)
-                    .atZoneSameInstant(ZoneId.of("America/Sao_Paulo"))
-                    .toLocalDateTime();
-
-            Integer golsCasa = null;
-            Integer golsFora = null;
-
-            JsonNode fullTime = match.get("score").get("fullTime");
-
-            if (fullTime.get("home") != null && !fullTime.get("home").isNull()) {
-                golsCasa = fullTime.get("home").asInt();
-            }
-
-            if (fullTime.get("away") != null && !fullTime.get("away").isNull()) {
-                golsFora = fullTime.get("away").asInt();
-            }
-            
-          
-
-            Jogo jogo = new Jogo();
-
-            jogo.setApiId(apiId);
-            jogo.setTimeCasa(timeCasa);
-            jogo.setTimeFora(timeFora);
-            jogo.setDataHora(dataHora);
-            jogo.setGolsCasa(golsCasa);
-            jogo.setGolsFora(golsFora);
-            jogo.setEscudoTimeCasa(escudoTimeCasa);
-            jogo.setEscudoTimeFora(escudoTimeFora);
-            jogoRepository.save(jogo);
-        }
-
-        System.out.println("Jogos importados com sucesso!");
     }
 }

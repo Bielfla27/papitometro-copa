@@ -35,19 +35,22 @@ public class Jogo {
     
     private String escudoTimeCasa;
     private String escudoTimeFora;
-    
+    private String status; 
    
 
 	public Jogo() {
     }
 
-    public Jogo(Long id, String timeCasa, String timeFora, LocalDateTime dataHora, Integer golsCasa, Integer golsFora) {
+    public Jogo(Long id, String timeCasa, String timeFora, LocalDateTime dataHora, Integer golsCasa, Integer golsFora,String escudoTimeCasa, String escudoTimeFora , String status) {
         this.id = id;
         this.timeCasa = timeCasa;
         this.timeFora = timeFora;
         this.dataHora = dataHora;
         this.golsCasa = golsCasa;
         this.golsFora = golsFora;
+        this.escudoTimeCasa = escudoTimeCasa;
+        this.escudoTimeFora = escudoTimeFora;
+        this.status = status;
     }
     
    
@@ -131,4 +134,14 @@ public class Jogo {
 	public void setEscudoTimeFora(String escudoTimeFora) {
 		this.escudoTimeFora = escudoTimeFora;
 	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	
 }

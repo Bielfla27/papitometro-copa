@@ -1,5 +1,7 @@
 package copa.papitometroCopaDoMundo.repositories;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import copa.papitometroCopaDoMundo.entitites.Usuario;
@@ -7,5 +9,7 @@ import copa.papitometroCopaDoMundo.entitites.Usuario;
 
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+	
+	   Optional<Usuario> findByEmailAndSenha(String email, String senha);
 
 }
