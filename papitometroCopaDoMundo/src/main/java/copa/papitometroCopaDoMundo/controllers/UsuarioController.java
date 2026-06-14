@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import copa.papitometroCopaDoMundo.dto.LoginDTO;
+import copa.papitometroCopaDoMundo.dto.LoginResponseDTO;
 import copa.papitometroCopaDoMundo.dto.UsuarioDTO;
 import copa.papitometroCopaDoMundo.services.UsuarioService;
 
@@ -27,10 +29,9 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public UsuarioDTO insert(@RequestBody UsuarioDTO dto) {
+    public LoginResponseDTO insert(@RequestBody UsuarioDTO dto) {
         return service.insert(dto);
     }
-
     @PutMapping("/{id}")
     public UsuarioDTO update(@PathVariable Long id, @RequestBody UsuarioDTO dto) {
         return service.update(id, dto);
@@ -42,7 +43,7 @@ public class UsuarioController {
     }
     
     @PostMapping("/login")
-    public UsuarioDTO login(@RequestBody UsuarioDTO dto) {
+    public LoginResponseDTO login(@RequestBody LoginDTO dto) {
         return service.login(dto);
     }
 }
