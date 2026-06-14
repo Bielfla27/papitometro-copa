@@ -344,3 +344,21 @@ body {
   color: #ddd;
   font-weight: bold;
 }
+
+.game-card.palpitado {
+  box-shadow: 0 0 0 1px rgba(212, 167, 44, 0.35);
+}
+
+.badge-palpitado {
+  background: #1f2937;
+  color: #d4a72c;
+
+  font-size: 10px;
+  font-weight: bold;
+
+  padding: 4px 8px;
+  border-radius: 20px;
+
+  letter-spacing: 1px;
+  text-align: center;
+}

@@ -3,9 +3,17 @@ import "./App.css";
 import api from "./services/api";
 import LoginCadastro from "./pages/LoginCadastro";
 
+function formatarDataLocal(data) {
+  return [
+    data.getFullYear(),
+    String(data.getMonth() + 1).padStart(2, "0"),
+    String(data.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 const datas = [];
-const inicio = new Date("2026-06-11");
-const fim = new Date("2026-07-19");
+const inicio = new Date(2026, 5, 11);
+const fim = new Date(2026, 6, 19);
 
 let dataAtual = new Date(inicio);
 
@@ -22,7 +30,7 @@ while (dataAtual <= fim) {
     diaSemana: diaSemana.replace(".", "").toUpperCase(),
     dia: dataAtual.getDate(),
     mes: mes.replace(".", "").toUpperCase(),
-    dataCompleta: dataAtual.toISOString().split("T")[0],
+    dataCompleta: formatarDataLocal(dataAtual),
   });
 
   dataAtual.setDate(dataAtual.getDate() + 1);
@@ -37,15 +45,10 @@ const rankingMock = [
 ];
 
 function getDataInicial() {
-  const hoje = new Date().toISOString().split("T")[0];
+  const hoje = formatarDataLocal(new Date());
 
-  if (hoje < "2026-06-11") {
-    return "2026-06-11";
-  }
-
-  if (hoje > "2026-07-19") {
-    return "2026-07-19";
-  }
+  if (hoje < "2026-06-11") return "2026-06-11";
+  if (hoje > "2026-07-19") return "2026-07-19";
 
   return hoje;
 }
@@ -62,39 +65,39 @@ function App() {
   });
 
   useEffect(() => {
-      api
-        .get("/jogos")
-        .then((response) => {
-          setJogos(response.data);
-        })
-        .catch((error) => {
-          console.error("Erro ao buscar jogos:", error);
+    api
+      .get("/jogos")
+      .then((response) => {
+        setJogos(response.data);
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar jogos:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!usuarioLogado?.id) return;
+
+    api
+      .get(`/palpites/usuario/${usuarioLogado.id}`)
+      .then((response) => {
+        const palpitesMap = {};
+
+        response.data.forEach((palpite) => {
+          palpitesMap[palpite.jogoId] = {
+            id: palpite.id,
+            golsCasa: palpite.golsCasa,
+            golsFora: palpite.golsFora,
+            pontos: palpite.pontos,
+          };
         });
-    }, []);
 
-    useEffect(() => {
-      if (!usuarioLogado?.id) {
-        return;
-      }
-
-      api
-        .get(`/palpites/usuario/${usuarioLogado.id}`)
-        .then((response) => {
-          const palpitesMap = {};
-
-          response.data.forEach((palpite) => {
-            palpitesMap[palpite.jogoId] = {
-              golsCasa: palpite.golsCasa,
-              golsFora: palpite.golsFora,
-            };
-          });
-
-          setPalpites(palpitesMap);
-        })
-        .catch((error) => {
-          console.error("Erro ao buscar palpites:", error);
-        });
-    }, [usuarioLogado]);
+        setPalpites(palpitesMap);
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar palpites:", error);
+      });
+  }, [usuarioLogado]);
 
   function logout() {
     localStorage.removeItem("usuarioLogado");
@@ -114,13 +117,17 @@ function App() {
   async function salvarPalpites() {
     try {
       if (!usuarioLogado?.id) {
-        alert("Usuário logado inválido. Saia e entre novamente.");
+        alert("Usuário logado inválido.");
         return;
       }
 
       const palpitesParaSalvar = Object.entries(palpites)
-        .filter(([_, palpite]) => palpite.golsCasa !== "" && palpite.golsFora !== "")
+        .filter(
+          ([_, palpite]) =>
+            palpite.golsCasa !== "" && palpite.golsFora !== ""
+        )
         .map(([jogoId, palpite]) => ({
+          id: palpite.id,
           usuarioId: usuarioLogado.id,
           jogoId: Number(jogoId),
           golsCasa: Number(palpite.golsCasa),
@@ -128,18 +135,31 @@ function App() {
         }));
 
       if (palpitesParaSalvar.length === 0) {
-        alert("Preencha pelo menos um palpite antes de salvar.");
+        alert("Preencha pelo menos um palpite.");
         return;
       }
 
-      console.log("Enviando palpites:", palpitesParaSalvar);
+      const novosPalpites = { ...palpites };
 
       for (const palpite of palpitesParaSalvar) {
-        await api.post("/palpites", palpite);
+        let response;
+
+        if (palpite.id) {
+          response = await api.put(`/palpites/${palpite.id}`, palpite);
+        } else {
+          response = await api.post("/palpites", palpite);
+        }
+
+        novosPalpites[response.data.jogoId] = {
+          id: response.data.id,
+          golsCasa: response.data.golsCasa,
+          golsFora: response.data.golsFora,
+          pontos: response.data.pontos,
+        };
       }
 
+      setPalpites(novosPalpites);
       alert("Palpites salvos com sucesso!");
-      setPalpites({});
     } catch (error) {
       console.error("Erro ao salvar palpites:", error);
 
@@ -223,7 +243,9 @@ function App() {
           ) : (
             jogosFiltrados.map((jogo) => (
               <div
-                className={`game-card ${getStatusClass(jogo)}`}
+                className={`game-card ${getStatusClass(jogo)} ${
+                  palpites[jogo.id]?.id ? "palpitado" : ""
+                }`}
                 key={jogo.id}
               >
                 <div className="info-jogo">
@@ -233,6 +255,10 @@ function App() {
                       minute: "2-digit",
                     })}
                   </span>
+
+                  {palpites[jogo.id]?.id && (
+                    <span className="badge-palpitado">PALPITE FEITO</span>
+                  )}
 
                   {jogo.status?.toUpperCase() === "FINISHED" && (
                     <span className="badge-finalizado">FINALIZADO</span>
@@ -268,7 +294,7 @@ function App() {
                     <input
                       type="number"
                       min="0"
-                      value={palpites[jogo.id]?.golsCasa || ""}
+                      value={palpites[jogo.id]?.golsCasa ?? ""}
                       onChange={(e) =>
                         handlePalpite(jogo.id, "golsCasa", e.target.value)
                       }
@@ -279,7 +305,7 @@ function App() {
                     <input
                       type="number"
                       min="0"
-                      value={palpites[jogo.id]?.golsFora || ""}
+                      value={palpites[jogo.id]?.golsFora ?? ""}
                       onChange={(e) =>
                         handlePalpite(jogo.id, "golsFora", e.target.value)
                       }
