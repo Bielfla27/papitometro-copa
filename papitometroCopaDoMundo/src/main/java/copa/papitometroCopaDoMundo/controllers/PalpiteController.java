@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import copa.papitometroCopaDoMundo.dto.PalpiteDTO;
+import copa.papitometroCopaDoMundo.dto.RankingDTO;
 import copa.papitometroCopaDoMundo.services.PalpiteService;
 
 @RestController
@@ -44,5 +45,10 @@ public class PalpiteController {
     @GetMapping("/usuario/{usuarioId}")
     public List<PalpiteDTO> findByUsuario(@PathVariable Long usuarioId) {
         return service.findByUsuario(usuarioId);
+    }
+    
+    @GetMapping("/ranking")
+    public List<RankingDTO> buscarRanking() {
+        return service.buscarRanking();
     }
 }

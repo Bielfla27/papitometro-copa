@@ -16,8 +16,6 @@ public class PapitometroCopaDoMundoApplication {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		SpringApplication.run(PapitometroCopaDoMundoApplication.class, args);
 		
-		
-   
 	}
 
 }

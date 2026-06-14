@@ -56,13 +56,24 @@ function getDataInicial() {
 function App() {
   const [jogos, setJogos] = useState([]);
   const [palpites, setPalpites] = useState({});
-  const [ranking] = useState(rankingMock);
+  const [ranking, setRanking] = useState([]);
   const [dataSelecionada, setDataSelecionada] = useState(getDataInicial());
 
   const [usuarioLogado, setUsuarioLogado] = useState(() => {
     const usuarioSalvo = localStorage.getItem("usuarioLogado");
     return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
   });
+
+  useEffect(() => {
+    api
+      .get("/palpites/ranking")
+      .then((response) => {
+        setRanking(response.data);
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar ranking:", error);
+      });
+  }, []);
 
   useEffect(() => {
     api
@@ -114,64 +125,79 @@ function App() {
     });
   }
 
-  async function salvarPalpites() {
-    try {
-      if (!usuarioLogado?.id) {
-        alert("Usuário logado inválido.");
-        return;
-      }
-
-      const palpitesParaSalvar = Object.entries(palpites)
-        .filter(
-          ([_, palpite]) =>
-            palpite.golsCasa !== "" && palpite.golsFora !== ""
-        )
-        .map(([jogoId, palpite]) => ({
-          id: palpite.id,
-          usuarioId: usuarioLogado.id,
-          jogoId: Number(jogoId),
-          golsCasa: Number(palpite.golsCasa),
-          golsFora: Number(palpite.golsFora),
-        }));
-
-      if (palpitesParaSalvar.length === 0) {
-        alert("Preencha pelo menos um palpite.");
-        return;
-      }
-
-      const novosPalpites = { ...palpites };
-
-      for (const palpite of palpitesParaSalvar) {
-        let response;
-
-        if (palpite.id) {
-          response = await api.put(`/palpites/${palpite.id}`, palpite);
-        } else {
-          response = await api.post("/palpites", palpite);
+ async function salvarPalpites() {
+      try {
+        if (!usuarioLogado?.id) {
+          alert("Usuário logado inválido.");
+          return;
         }
 
-        novosPalpites[response.data.jogoId] = {
-          id: response.data.id,
-          golsCasa: response.data.golsCasa,
-          golsFora: response.data.golsFora,
-          pontos: response.data.pontos,
-        };
+        const palpitesParaSalvar = Object.entries(palpites)
+          .filter(([jogoId, palpite]) => {
+            const jogo = jogos.find((j) => j.id === Number(jogoId));
+
+            if (!jogo) return false;
+
+            const status = jogo.status?.toUpperCase();
+
+            const jogoPodeReceberPalpite = status === "TIMED";
+
+            const palpitePreenchido =
+              palpite.golsCasa !== "" &&
+              palpite.golsCasa !== undefined &&
+              palpite.golsFora !== "" &&
+              palpite.golsFora !== undefined;
+
+            return jogoPodeReceberPalpite && palpitePreenchido;
+          })
+          .map(([jogoId, palpite]) => ({
+            id: palpite.id,
+            usuarioId: usuarioLogado.id,
+            jogoId: Number(jogoId),
+            golsCasa: Number(palpite.golsCasa),
+            golsFora: Number(palpite.golsFora),
+          }));
+
+        if (palpitesParaSalvar.length === 0) {
+          alert("Nenhum palpite válido para salvar. Só é possível palpitar em jogos agendados.");
+          return;
+        }
+
+        const novosPalpites = { ...palpites };
+
+        for (const palpite of palpitesParaSalvar) {
+          let response;
+
+          if (palpite.id) {
+            response = await api.put(`/palpites/${palpite.id}`, palpite);
+          } else {
+            response = await api.post("/palpites", palpite);
+          }
+
+          novosPalpites[response.data.jogoId] = {
+            id: response.data.id,
+            golsCasa: response.data.golsCasa,
+            golsFora: response.data.golsFora,
+            pontos: response.data.pontos,
+          };
+        }
+
+        setPalpites(novosPalpites);
+        alert("Palpites salvos com sucesso!");
+        const rankingResponse = await api.get("/palpites/ranking");
+        setRanking(rankingResponse.data);
+      } catch (error) {
+        console.error("Erro ao salvar palpites:", error);
+
+        const mensagem =
+          error.response?.data?.message ||
+          error.response?.data?.error ||
+          error.response?.data ||
+          "Erro ao salvar palpites.";
+
+        alert(mensagem);
       }
-
-      setPalpites(novosPalpites);
-      alert("Palpites salvos com sucesso!");
-    } catch (error) {
-      console.error("Erro ao salvar palpites:", error);
-
-      const mensagem =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        error.response?.data ||
-        "Erro ao salvar palpites.";
-
-      alert(mensagem);
     }
-  }
 
   function jogoFinalizado(jogo) {
     return jogo.golsCasa !== null && jogo.golsFora !== null;
@@ -294,6 +320,7 @@ function App() {
                     <input
                       type="number"
                       min="0"
+                      disabled={jogo.status?.toUpperCase() !== "TIMED"}
                       value={palpites[jogo.id]?.golsCasa ?? ""}
                       onChange={(e) =>
                         handlePalpite(jogo.id, "golsCasa", e.target.value)
@@ -305,6 +332,7 @@ function App() {
                     <input
                       type="number"
                       min="0"
+                      disabled={jogo.status?.toUpperCase() !== "TIMED"}
                       value={palpites[jogo.id]?.golsFora ?? ""}
                       onChange={(e) =>
                         handlePalpite(jogo.id, "golsFora", e.target.value)
