@@ -27,7 +27,7 @@ function LoginCadastro({ onLogin }) {
         }
     }
 
-    function entrar(e) {
+   /* function entrar(e) {
         e.preventDefault();
 
         // Login simples temporário
@@ -39,10 +39,10 @@ function LoginCadastro({ onLogin }) {
 
         localStorage.setItem("usuarioLogado", JSON.stringify(usuarioFake));
         onLogin(usuarioFake);
-    }
+    }*/
 
 
-     /*async function entrar(e) {
+     async function entrar(e) {
     e.preventDefault();
 
     try {
@@ -57,7 +57,7 @@ function LoginCadastro({ onLogin }) {
         console.error(error);
         alert("Email ou senha inválidos.");
     }
-    }*/
+    }
 
   return (
     <main className="auth-page">

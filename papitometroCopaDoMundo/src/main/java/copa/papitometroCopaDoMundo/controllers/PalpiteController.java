@@ -10,6 +10,7 @@ import copa.papitometroCopaDoMundo.services.PalpiteService;
 
 @RestController
 @RequestMapping("/palpites")
+@CrossOrigin(origins = "http://localhost:5173")
 public class PalpiteController {
 
     @Autowired
@@ -38,5 +39,10 @@ public class PalpiteController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+    
+    @GetMapping("/usuario/{usuarioId}")
+    public List<PalpiteDTO> findByUsuario(@PathVariable Long usuarioId) {
+        return service.findByUsuario(usuarioId);
     }
 }

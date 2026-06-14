@@ -62,15 +62,39 @@ function App() {
   });
 
   useEffect(() => {
-    api
-      .get("/jogos")
-      .then((response) => {
-        setJogos(response.data);
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar jogos:", error);
-      });
-  }, []);
+      api
+        .get("/jogos")
+        .then((response) => {
+          setJogos(response.data);
+        })
+        .catch((error) => {
+          console.error("Erro ao buscar jogos:", error);
+        });
+    }, []);
+
+    useEffect(() => {
+      if (!usuarioLogado?.id) {
+        return;
+      }
+
+      api
+        .get(`/palpites/usuario/${usuarioLogado.id}`)
+        .then((response) => {
+          const palpitesMap = {};
+
+          response.data.forEach((palpite) => {
+            palpitesMap[palpite.jogoId] = {
+              golsCasa: palpite.golsCasa,
+              golsFora: palpite.golsFora,
+            };
+          });
+
+          setPalpites(palpitesMap);
+        })
+        .catch((error) => {
+          console.error("Erro ao buscar palpites:", error);
+        });
+    }, [usuarioLogado]);
 
   function logout() {
     localStorage.removeItem("usuarioLogado");
@@ -87,10 +111,46 @@ function App() {
     });
   }
 
-  function salvarPalpites() {
-    console.log("Usuário logado:", usuarioLogado);
-    console.log("Palpites:", palpites);
-    alert("Por enquanto apenas exibindo no console.");
+  async function salvarPalpites() {
+    try {
+      if (!usuarioLogado?.id) {
+        alert("Usuário logado inválido. Saia e entre novamente.");
+        return;
+      }
+
+      const palpitesParaSalvar = Object.entries(palpites)
+        .filter(([_, palpite]) => palpite.golsCasa !== "" && palpite.golsFora !== "")
+        .map(([jogoId, palpite]) => ({
+          usuarioId: usuarioLogado.id,
+          jogoId: Number(jogoId),
+          golsCasa: Number(palpite.golsCasa),
+          golsFora: Number(palpite.golsFora),
+        }));
+
+      if (palpitesParaSalvar.length === 0) {
+        alert("Preencha pelo menos um palpite antes de salvar.");
+        return;
+      }
+
+      console.log("Enviando palpites:", palpitesParaSalvar);
+
+      for (const palpite of palpitesParaSalvar) {
+        await api.post("/palpites", palpite);
+      }
+
+      alert("Palpites salvos com sucesso!");
+      setPalpites({});
+    } catch (error) {
+      console.error("Erro ao salvar palpites:", error);
+
+      const mensagem =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data ||
+        "Erro ao salvar palpites.";
+
+      alert(mensagem);
+    }
   }
 
   function jogoFinalizado(jogo) {

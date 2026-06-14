@@ -13,7 +13,6 @@ import copa.papitometroCopaDoMundo.repositories.JogoRepository;
 import copa.papitometroCopaDoMundo.repositories.PalpiteRepository;
 import copa.papitometroCopaDoMundo.repositories.UsuarioRepository;
 
-
 @Service
 public class PalpiteService {
 
@@ -52,6 +51,8 @@ public class PalpiteService {
         Jogo jogo = jogoRepository.findById(dto.getJogoId())
                 .orElseThrow(() -> new RuntimeException("Jogo não encontrado"));
 
+        validarSePodePalpitar(jogo);
+
         Palpite entity = new Palpite();
 
         entity.setUsuario(usuario);
@@ -69,6 +70,8 @@ public class PalpiteService {
         Palpite entity = palpiteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Palpite não encontrado"));
 
+        validarSePodePalpitar(entity.getJogo());
+
         entity.setGolsCasa(dto.getGolsCasa());
         entity.setGolsFora(dto.getGolsFora());
 
@@ -79,5 +82,63 @@ public class PalpiteService {
 
     public void delete(Long id) {
         palpiteRepository.deleteById(id);
+    }
+
+    public void recalcularPontosDoJogo(Jogo jogo) {
+
+        if (jogo.getGolsCasa() == null || jogo.getGolsFora() == null) {
+            return;
+        }
+
+        List<Palpite> palpitesDoJogo = palpiteRepository.findByJogoId(jogo.getId());
+
+        for (Palpite palpite : palpitesDoJogo) {
+            Integer pontos = calcularPontos(palpite, jogo);
+            palpite.setPontos(pontos);
+            palpiteRepository.save(palpite);
+        }
+    }
+
+    private void validarSePodePalpitar(Jogo jogo) {
+        String status = jogo.getStatus();
+
+        if ("FINISHED".equalsIgnoreCase(status)
+                || "LIVE".equalsIgnoreCase(status)
+                || "IN_PLAY".equalsIgnoreCase(status)
+                || "PAUSED".equalsIgnoreCase(status)) {
+            throw new RuntimeException("Não é possível palpitar em jogo ao vivo ou finalizado");
+        }
+    }
+
+    private Integer calcularPontos(Palpite palpite, Jogo jogo) {
+
+        if (jogo.getGolsCasa() == null || jogo.getGolsFora() == null) {
+            return 0;
+        }
+
+        boolean placarExato =
+                palpite.getGolsCasa().equals(jogo.getGolsCasa())
+                && palpite.getGolsFora().equals(jogo.getGolsFora());
+
+        if (placarExato) {
+            return 3;
+        }
+
+        int resultadoReal = Integer.compare(jogo.getGolsCasa(), jogo.getGolsFora());
+        int resultadoPalpite = Integer.compare(palpite.getGolsCasa(), palpite.getGolsFora());
+
+        if (resultadoReal == resultadoPalpite) {
+            return 1;
+        }
+
+        return 0;
+    }
+    
+    public List<PalpiteDTO> findByUsuario(Long usuarioId) {
+
+        return palpiteRepository.findByUsuarioId(usuarioId)
+                .stream()
+                .map(PalpiteDTO::new)
+                .toList();
     }
 }

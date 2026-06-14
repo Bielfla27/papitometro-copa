@@ -3,6 +3,7 @@ package copa.papitometroCopaDoMundo.services;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,9 @@ public class ImportarJogosService implements CommandLineRunner {
 
     @Autowired
     private JogoRepository jogoRepository;
+
+    @Autowired
+    private PalpiteService palpiteService;
 
     @Value("${football.api.token}")
     private String token;
@@ -63,10 +67,6 @@ public class ImportarJogosService implements CommandLineRunner {
 
                 Long apiId = match.get("id").asLong();
 
-                if (jogoRepository.existsByApiId(apiId)) {
-                    continue;
-                }
-
                 String timeCasa = match.get("homeTeam").get("name").isNull()
                         ? "Não definido"
                         : match.get("homeTeam").get("name").asText();
@@ -105,9 +105,17 @@ public class ImportarJogosService implements CommandLineRunner {
                     golsFora = fullTime.get("away").asInt();
                 }
 
-                Jogo jogo = new Jogo();
+                Optional<Jogo> jogoOptional = jogoRepository.findByApiId(apiId);
 
-                jogo.setApiId(apiId);
+                Jogo jogo;
+
+                if (jogoOptional.isPresent()) {
+                    jogo = jogoOptional.get();
+                } else {
+                    jogo = new Jogo();
+                    jogo.setApiId(apiId);
+                }
+
                 jogo.setTimeCasa(timeCasa);
                 jogo.setTimeFora(timeFora);
                 jogo.setDataHora(dataHora);
@@ -117,10 +125,12 @@ public class ImportarJogosService implements CommandLineRunner {
                 jogo.setEscudoTimeFora(escudoTimeFora);
                 jogo.setStatus(status);
 
-                jogoRepository.save(jogo);
+                jogo = jogoRepository.save(jogo);
+
+                palpiteService.recalcularPontosDoJogo(jogo);
             }
 
-            System.out.println("Jogos importados com sucesso!");
+            System.out.println("Jogos importados/atualizados com sucesso!");
 
         } catch (Exception e) {
             System.out.println("Não foi possível importar os jogos agora.");
