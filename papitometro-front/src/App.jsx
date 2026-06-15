@@ -251,9 +251,13 @@ function jogoPodeReceberPalpite(jogo) {
     return <LoginCadastro onLogin={setUsuarioLogado} />;
   }
 
-  const jogosFiltrados = jogos.filter((jogo) => {
+  const jogosFiltrados = jogos
+  .filter((jogo) => {
     const dataDoJogo = jogo.dataHora.split("T")[0];
     return dataDoJogo === dataSelecionada;
+  })
+  .sort((a, b) => {
+    return new Date(a.dataHora) - new Date(b.dataHora);
   });
 
   return (
@@ -351,6 +355,7 @@ function jogoPodeReceberPalpite(jogo) {
                   </>
                 ) : (
                   <>
+                  
                     <input
                       type="number"
                       min="0"
@@ -372,6 +377,7 @@ function jogoPodeReceberPalpite(jogo) {
                         handlePalpite(jogo.id, "golsFora", e.target.value)
                       }
                     />
+                    
                   </>
                 )}
 
@@ -397,9 +403,28 @@ function jogoPodeReceberPalpite(jogo) {
           <h2>🏆 RANKING</h2>
 
           {ranking.map((item, index) => (
-            <div className="ranking-row" key={item.nome}>
-              <span>{index + 1}º</span>
-              <strong>{item.nome}</strong>
+                <div
+                  className={`ranking-row ${
+                    item.usuarioId === usuarioLogado.id
+                      ? "ranking-row-logado"
+                      : ""
+                  }`}
+                  key={item.nome}
+                >
+              <span>
+                {index === 0
+                  ? "🥇"
+                  : index === 1
+                  ? "🥈"
+                  : index === 2
+                  ? "🥉"
+                  : `${index + 1}º`}
+              </span>
+              <strong>
+                {item.nome}
+
+                {item.usuarioId === usuarioLogado.id && " 👈"}
+              </strong>
               <b>{item.pontos}</b>
             </div>
           ))}
