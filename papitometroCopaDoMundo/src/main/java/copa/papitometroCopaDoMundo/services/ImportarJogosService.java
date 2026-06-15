@@ -12,6 +12,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,9 +20,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import copa.papitometroCopaDoMundo.entitites.Jogo;
 import copa.papitometroCopaDoMundo.repositories.JogoRepository;
+import jakarta.annotation.PostConstruct;
 
 @Service
-public class ImportarJogosService implements CommandLineRunner {
+public class ImportarJogosService  {
 
     @Autowired
     private JogoRepository jogoRepository;
@@ -34,9 +36,20 @@ public class ImportarJogosService implements CommandLineRunner {
 
     @Value("${football.api.url}")
     private String url;
+    
+    @PostConstruct
+    public void iniciar() {
+        importarJogos();
+    }
 
-    @Override
-    public void run(String... args) {
+    @Scheduled(fixedRate = 120000)
+    public void atualizarJogosAutomaticamente() {
+        System.out.println("Atualizando jogos automaticamente...");
+        importarJogos();
+      
+    }
+
+    public void importarJogos() {
 
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -127,6 +140,7 @@ public class ImportarJogosService implements CommandLineRunner {
 
                 jogo = jogoRepository.save(jogo);
 
+             
                 palpiteService.recalcularPontosDoJogo(jogo);
             }
 

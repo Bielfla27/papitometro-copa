@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import copa.papitometroCopaDoMundo.dto.JogoDTO;
+
 import copa.papitometroCopaDoMundo.services.JogoService;
 
 @RestController
@@ -16,6 +17,7 @@ public class JogoController {
     @Autowired
     private JogoService service;
     
+
     @GetMapping
     public List<JogoDTO> findAll() {
         return service.findAll();

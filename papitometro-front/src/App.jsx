@@ -53,6 +53,8 @@ function getDataInicial() {
   return hoje;
 }
 
+
+
 function App() {
   const [jogos, setJogos] = useState([]);
   const [palpites, setPalpites] = useState({});
@@ -138,9 +140,7 @@ function App() {
 
             if (!jogo) return false;
 
-            const status = jogo.status?.toUpperCase();
-
-            const jogoPodeReceberPalpite = status === "TIMED";
+            const podePalpitar = jogoPodeReceberPalpite(jogo);
 
             const palpitePreenchido =
               palpite.golsCasa !== "" &&
@@ -148,7 +148,7 @@ function App() {
               palpite.golsFora !== "" &&
               palpite.golsFora !== undefined;
 
-            return jogoPodeReceberPalpite && palpitePreenchido;
+            return podePalpitar && palpitePreenchido;
           })
           .map(([jogoId, palpite]) => ({
             id: palpite.id,
@@ -203,15 +203,49 @@ function App() {
     return jogo.golsCasa !== null && jogo.golsFora !== null;
   }
 
-  function getStatusClass(jogo) {
-    const status = jogo.status?.toUpperCase();
+  function jogoJaComecou(jogo) {
+  const agora = new Date();
+  const inicioJogo = new Date(jogo.dataHora);
+  return inicioJogo <= agora;
+}
 
-    if (status === "FINISHED") return "finalizado";
-    if (status === "TIMED") return "agendado";
-    if (["LIVE", "IN_PLAY", "PAUSED"].includes(status)) return "ao-vivo";
+function getStatusVisual(jogo) {
+  const status = jogo.status?.toUpperCase();
 
-    return "";
-  }
+  if (status === "FINISHED") return "FINALIZADO";
+
+  if (["LIVE", "IN_PLAY", "PAUSED"].includes(status)) return "AO_VIVO";
+
+  if (status === "TIMED" && jogoJaComecou(jogo)) return "AO_VIVO";
+
+  return "AGENDADO";
+}
+
+function placarCasa(jogo) {
+  if (jogo.golsCasa !== null) return jogo.golsCasa;
+  if (getStatusVisual(jogo) === "AO_VIVO") return 0;
+  return "";
+}
+
+function placarFora(jogo) {
+  if (jogo.golsFora !== null) return jogo.golsFora;
+  if (getStatusVisual(jogo) === "AO_VIVO") return 0;
+  return "";
+}
+
+function getStatusClass(jogo) {
+  const statusVisual = getStatusVisual(jogo);
+
+  if (statusVisual === "FINALIZADO") return "finalizado";
+  if (statusVisual === "AO_VIVO") return "ao-vivo";
+  if (statusVisual === "AGENDADO") return "agendado";
+
+  return "";
+}
+
+function jogoPodeReceberPalpite(jogo) {
+  return getStatusVisual(jogo) === "AGENDADO";
+}
 
   if (!usuarioLogado) {
     return <LoginCadastro onLogin={setUsuarioLogado} />;
@@ -286,15 +320,15 @@ function App() {
                     <span className="badge-palpitado">PALPITE FEITO</span>
                   )}
 
-                  {jogo.status?.toUpperCase() === "FINISHED" && (
+                  {getStatusVisual(jogo) === "FINALIZADO" && (
                     <span className="badge-finalizado">FINALIZADO</span>
                   )}
 
-                  {["LIVE", "IN_PLAY", "PAUSED"].includes(
-                    jogo.status?.toUpperCase()
-                  ) && <span className="badge-ao-vivo">AO VIVO</span>}
+                  {getStatusVisual(jogo) === "AO_VIVO" && (
+                    <span className="badge-ao-vivo">AO VIVO</span>
+                  )}
 
-                  {jogo.status?.toUpperCase() === "TIMED" && (
+                  {getStatusVisual(jogo) === "AGENDADO" && (
                     <span className="badge-agendado">AGENDADO</span>
                   )}
                 </div>
@@ -309,18 +343,18 @@ function App() {
                   <strong>{jogo.timeCasa || "Não definido"}</strong>
                 </div>
 
-                {jogoFinalizado(jogo) ? (
+                {jogoFinalizado(jogo) || getStatusVisual(jogo) === "AO_VIVO" ? (
                   <>
-                    <div className="placar-final">{jogo.golsCasa}</div>
-                    <span className="versus">x</span>
-                    <div className="placar-final">{jogo.golsFora}</div>
+                <div className="placar-final">{placarCasa(jogo)}</div>
+                <span className="versus">x</span>
+                <div className="placar-final">{placarFora(jogo)}</div>
                   </>
                 ) : (
                   <>
                     <input
                       type="number"
                       min="0"
-                      disabled={jogo.status?.toUpperCase() !== "TIMED"}
+                      disabled={!jogoPodeReceberPalpite(jogo)}
                       value={palpites[jogo.id]?.golsCasa ?? ""}
                       onChange={(e) =>
                         handlePalpite(jogo.id, "golsCasa", e.target.value)
@@ -332,7 +366,7 @@ function App() {
                     <input
                       type="number"
                       min="0"
-                      disabled={jogo.status?.toUpperCase() !== "TIMED"}
+                      disabled={!jogoPodeReceberPalpite(jogo)}
                       value={palpites[jogo.id]?.golsFora ?? ""}
                       onChange={(e) =>
                         handlePalpite(jogo.id, "golsFora", e.target.value)
