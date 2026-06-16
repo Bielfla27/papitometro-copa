@@ -60,7 +60,9 @@ function App() {
   const [palpites, setPalpites] = useState({});
   const [ranking, setRanking] = useState([]);
   const [dataSelecionada, setDataSelecionada] = useState(getDataInicial());
-
+  const [palpitesPorJogo, setPalpitesPorJogo] = useState({});
+  const [jogoAbertoId, setJogoAbertoId] = useState(null);
+  
   const [usuarioLogado, setUsuarioLogado] = useState(() => {
     const usuarioSalvo = localStorage.getItem("usuarioLogado");
     return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
@@ -199,6 +201,27 @@ function App() {
       }
     }
 
+   async function carregarPalpitesDoJogo(jogoId) {
+        try {
+          if (jogoAbertoId === jogoId) {
+            setJogoAbertoId(null);
+            return;
+          }
+
+          const response = await api.get(`/palpites/jogo/${jogoId}`);
+
+          setPalpitesPorJogo({
+            ...palpitesPorJogo,
+            [jogoId]: response.data,
+          });
+
+          setJogoAbertoId(jogoId);
+        } catch (error) {
+          console.error("Erro ao buscar palpites do jogo:", error);
+          alert("Erro ao carregar palpites desse jogo.");
+        }
+      }
+
   function jogoFinalizado(jogo) {
     return jogo.golsCasa !== null && jogo.golsFora !== null;
   }
@@ -335,6 +358,16 @@ function jogoPodeReceberPalpite(jogo) {
                   {getStatusVisual(jogo) === "AGENDADO" && (
                     <span className="badge-agendado">AGENDADO</span>
                   )}
+
+                  <button
+                    className={`icone-palpites ${
+                      jogoAbertoId === jogo.id ? "ativo" : ""
+                    }`}
+                    onClick={() => carregarPalpitesDoJogo(jogo.id)}
+                    title="Ver palpites"
+                  >
+                    👥
+                  </button>
                 </div>
 
                 <div className="team">
@@ -390,6 +423,34 @@ function jogoPodeReceberPalpite(jogo) {
                   )}
                   <strong>{jogo.timeFora || "Não definido"}</strong>
                 </div>
+                
+                {jogoAbertoId === jogo.id && (
+                  <div className="palpites-jogo-box">
+                 
+
+                    <div className="cabecalho-palpites">
+                      <span>Usuário</span>
+                      <span>Palpite</span>
+                      <span>Pontos</span>
+                    </div>
+                    {palpitesPorJogo[jogo.id]?.length > 0 ? (
+                      palpitesPorJogo[jogo.id].map((palpite) => (
+                        <div className="palpite-amigo" key={palpite.usuarioId}>
+                          <strong>{palpite.usuarioNome}</strong>
+
+                          <span>
+                            {palpite.golsCasa} x {palpite.golsFora}
+                          </span>
+
+                          <b>{palpite.pontos} pts</b>
+                        </div>
+                      ))
+                    ) : (
+                      <p>Nenhum palpite feito para esse jogo ainda.</p>
+                    )}
+                  </div>
+                )}
+
               </div>
             ))
           )}

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import copa.papitometroCopaDoMundo.dto.PalpiteJogoDTO;
 import copa.papitometroCopaDoMundo.dto.RankingDTO;
 import copa.papitometroCopaDoMundo.entitites.Palpite;
 
@@ -26,4 +27,19 @@ public interface PalpiteRepository extends JpaRepository<Palpite, Long> {
 		        ORDER BY COALESCE(SUM(p.pontos), 0) DESC
 		    """)
 		    List<RankingDTO> buscarRanking();
+	 
+	 
+	 @Query("""
+			    SELECT new copa.papitometroCopaDoMundo.dto.PalpiteJogoDTO(
+			        p.usuario.id,
+			        p.usuario.nome,
+			        p.golsCasa,
+			        p.golsFora,
+			        p.pontos
+			    )
+			    FROM Palpite p
+			    WHERE p.jogo.id = :jogoId
+			    ORDER BY p.usuario.nome
+			""")
+			List<PalpiteJogoDTO> buscarPalpitesPorJogo(Long jogoId);
 }

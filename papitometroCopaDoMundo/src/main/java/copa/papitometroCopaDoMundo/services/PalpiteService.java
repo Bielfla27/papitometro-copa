@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import copa.papitometroCopaDoMundo.dto.PalpiteDTO;
+import copa.papitometroCopaDoMundo.dto.PalpiteJogoDTO;
 import copa.papitometroCopaDoMundo.dto.RankingDTO;
 import copa.papitometroCopaDoMundo.entitites.Jogo;
 import copa.papitometroCopaDoMundo.entitites.Palpite;
@@ -145,5 +146,9 @@ public class PalpiteService {
     
     public List<RankingDTO> buscarRanking() {
         return palpiteRepository.buscarRanking();
+    }
+    
+    public List<PalpiteJogoDTO> buscarPalpitesPorJogo(Long jogoId) {
+        return palpiteRepository.buscarPalpitesPorJogo(jogoId);
     }
 }
