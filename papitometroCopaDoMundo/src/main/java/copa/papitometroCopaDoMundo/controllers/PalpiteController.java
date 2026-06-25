@@ -12,7 +12,6 @@ import copa.papitometroCopaDoMundo.services.PalpiteService;
 
 @RestController
 @RequestMapping("/palpites")
-@CrossOrigin(origins = "http://localhost:5173")
 public class PalpiteController {
 
     @Autowired

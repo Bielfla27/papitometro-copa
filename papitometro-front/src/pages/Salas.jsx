@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 import "./Salas.css";
 
 export default function Salas({ usuarioLogado, onSelecionarSala }) {
@@ -16,9 +16,7 @@ export default function Salas({ usuarioLogado, onSelecionarSala }) {
       setCarregando(true);
       setMensagemErro("");
 
-      const response = await axios.get(
-        `http://localhost:8080/salas/minhas/${usuarioId}`
-      );
+      const response = await api.get(`/salas/minhas/${usuarioId}`);
 
       setSalas(response.data);
     } catch (error) {
@@ -38,7 +36,7 @@ export default function Salas({ usuarioLogado, onSelecionarSala }) {
 
     if (!nomeSala.trim()) return;
 
-    const response = await axios.post("http://localhost:8080/salas", {
+    const response = await api.post("/salas", {
       nome: nomeSala.trim(),
       usuarioId: Number(usuarioId),
     });
@@ -55,7 +53,7 @@ export default function Salas({ usuarioLogado, onSelecionarSala }) {
 
     if (!codigoSala.trim()) return;
 
-    const response = await axios.post("http://localhost:8080/salas/entrar", {
+    const response = await api.post("/salas/entrar", {
       codigo: codigoSala.trim(),
       usuarioId: Number(usuarioId),
     });
