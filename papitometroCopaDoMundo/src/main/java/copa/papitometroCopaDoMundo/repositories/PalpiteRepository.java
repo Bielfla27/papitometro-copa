@@ -51,7 +51,7 @@ public interface PalpiteRepository extends JpaRepository<Palpite, Long> {
 			    WHERE p.jogo.id = :jogoId
 			    ORDER BY p.usuario.nome
 			""")
-			List<PalpiteJogoDTO> buscarPalpitesPorJogo(Long jogoId);
+			List<PalpiteJogoDTO> buscarPalpitesPorJogo(@Param("jogoId") Long jogoId);
 	 
 	  List<Palpite> findBySala(Sala sala);
 	  

@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 @Table(
     name = "tb_palpite",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"usuario_id", "jogo_id"})
+        @UniqueConstraint(columnNames = {"usuario_id", "jogo_id", "sala_id"})
     }
 )
 public class Palpite {

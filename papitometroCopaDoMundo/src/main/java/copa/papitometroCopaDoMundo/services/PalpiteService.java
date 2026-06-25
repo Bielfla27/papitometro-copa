@@ -47,6 +47,7 @@ public class PalpiteService {
     }
 
     public PalpiteDTO insert(PalpiteDTO dto) {
+        validarDadosObrigatorios(dto);
 
         if (palpiteRepository.existsByUsuarioIdAndJogoIdAndSalaId(
                 dto.getUsuarioId(), dto.getJogoId(), dto.getSalaId())) {
@@ -82,6 +83,10 @@ public class PalpiteService {
         Palpite entity = palpiteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Palpite não encontrado"));
 
+        if (dto.getGolsCasa() == null || dto.getGolsFora() == null) {
+            throw new RuntimeException("Placar do palpite não informado");
+        }
+
         validarSePodePalpitar(entity.getJogo());
 
         entity.setGolsCasa(dto.getGolsCasa());
@@ -108,6 +113,24 @@ public class PalpiteService {
             Integer pontos = calcularPontos(palpite, jogo);
             palpite.setPontos(pontos);
             palpiteRepository.save(palpite);
+        }
+    }
+
+    private void validarDadosObrigatorios(PalpiteDTO dto) {
+        if (dto.getUsuarioId() == null) {
+            throw new RuntimeException("Usuário não informado");
+        }
+
+        if (dto.getJogoId() == null) {
+            throw new RuntimeException("Jogo não informado");
+        }
+
+        if (dto.getSalaId() == null) {
+            throw new RuntimeException("Sala não informada");
+        }
+
+        if (dto.getGolsCasa() == null || dto.getGolsFora() == null) {
+            throw new RuntimeException("Placar do palpite não informado");
         }
     }
 

@@ -32,11 +32,19 @@ public class SalaService {
 
     @Transactional
     public SalaDTO criarSala(String nome, Long usuarioId) {
+        if (usuarioId == null) {
+            throw new RuntimeException("Usuário não informado");
+        }
+
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new RuntimeException("Nome da sala não informado");
+        }
+
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         Sala sala = new Sala();
-        sala.setNome(nome);
+        sala.setNome(nome.trim());
         sala.setDono(usuario);
         sala.setCodigo(gerarCodigoUnico());
 
@@ -53,10 +61,18 @@ public class SalaService {
 
     @Transactional
     public SalaDTO entrarNaSala(String codigo, Long usuarioId) {
+        if (usuarioId == null) {
+            throw new RuntimeException("Usuário não informado");
+        }
+
+        if (codigo == null || codigo.trim().isEmpty()) {
+            throw new RuntimeException("Código da sala não informado");
+        }
+
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        Sala sala = salaRepository.findByCodigo(codigo)
+        Sala sala = salaRepository.findByCodigo(codigo.trim().toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Sala não encontrada"));
 
         boolean jaEstaNaSala = usuarioSalaRepository
@@ -75,6 +91,10 @@ public class SalaService {
 
     @Transactional(readOnly = true)
     public List<SalaDTO> minhasSalas(Long usuarioId) {
+        if (usuarioId == null) {
+            throw new RuntimeException("Usuário não informado");
+        }
+
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
