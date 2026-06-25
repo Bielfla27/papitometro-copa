@@ -49,9 +49,12 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "https://papitometro-copa.vercel.app"
+        config.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://papitometro-copa.vercel.app",
+                "https://papitometro-copa.onrender.com",
+                "https://*.vercel.app",
+                "https://*.onrender.com"
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));

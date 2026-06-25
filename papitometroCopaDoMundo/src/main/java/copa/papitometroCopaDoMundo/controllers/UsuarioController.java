@@ -12,7 +12,6 @@ import copa.papitometroCopaDoMundo.services.UsuarioService;
 
 @RestController
 @RequestMapping("/usuarios")
-@CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
     @Autowired
