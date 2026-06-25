@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import api from "./services/api";
 import LoginCadastro from "./pages/LoginCadastro";
+import Salas from "./pages/Salas";
 
 function formatarDataLocal(data) {
   return [
@@ -62,22 +63,36 @@ function App() {
   const [dataSelecionada, setDataSelecionada] = useState(getDataInicial());
   const [palpitesPorJogo, setPalpitesPorJogo] = useState({});
   const [jogoAbertoId, setJogoAbertoId] = useState(null);
-  
+
+  const [salaId, setSalaId] = useState(() => {
+  const salaSalva = localStorage.getItem("salaSelecionada");
+  return salaSalva ? JSON.parse(salaSalva).id : null;
+});
+
+  const [salaSelecionada, setSalaSelecionada] = useState(() => {
+    const salaSalva = localStorage.getItem("salaSelecionada");
+    return salaSalva ? JSON.parse(salaSalva) : null;
+  });
+
   const [usuarioLogado, setUsuarioLogado] = useState(() => {
     const usuarioSalvo = localStorage.getItem("usuarioLogado");
     return usuarioSalvo ? JSON.parse(usuarioSalvo) : null;
   });
 
   useEffect(() => {
-    api
-      .get("/palpites/ranking")
-      .then((response) => {
-        setRanking(response.data);
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar ranking:", error);
-      });
-  }, []);
+      if (!salaId) return;
+
+      setRanking([]);
+
+      api
+        .get(`/palpites/ranking/sala/${salaId}`)
+        .then((response) => {
+          setRanking(response.data);
+        })
+        .catch((error) => {
+          console.error("Erro ao buscar ranking:", error);
+        });
+    }, [salaId]);
 
   useEffect(() => {
     api
@@ -91,32 +106,40 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!usuarioLogado?.id) return;
+  if (!usuarioLogado?.id || !salaId) return;
 
-    api
-      .get(`/palpites/usuario/${usuarioLogado.id}`)
-      .then((response) => {
-        const palpitesMap = {};
+  setPalpites({});
 
-        response.data.forEach((palpite) => {
-          palpitesMap[palpite.jogoId] = {
-            id: palpite.id,
-            golsCasa: palpite.golsCasa,
-            golsFora: palpite.golsFora,
-            pontos: palpite.pontos,
-          };
-        });
+  api
+    .get(`/palpites/usuario/${usuarioLogado.id}/sala/${salaId}`)
+    .then((response) => {
+      const palpitesMap = {};
 
-        setPalpites(palpitesMap);
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar palpites:", error);
+      response.data.forEach((palpite) => {
+        palpitesMap[palpite.jogoId] = {
+          id: palpite.id,
+          golsCasa: palpite.golsCasa,
+          golsFora: palpite.golsFora,
+          pontos: palpite.pontos,
+        };
       });
-  }, [usuarioLogado]);
+
+      setPalpites(palpitesMap);
+    })
+    .catch((error) => {
+      console.error("Erro ao buscar palpites:", error);
+    });
+}, [usuarioLogado, salaId]);
 
   function logout() {
     localStorage.removeItem("usuarioLogado");
+    localStorage.removeItem("salaSelecionada");
+    localStorage.removeItem("salaId");
+    localStorage.removeItem("salaNome");
+
     setUsuarioLogado(null);
+    setSalaSelecionada(null);
+    setSalaId(null);
   }
 
   function handlePalpite(jogoId, campo, valor) {
@@ -153,12 +176,13 @@ function App() {
             return podePalpitar && palpitePreenchido;
           })
           .map(([jogoId, palpite]) => ({
-            id: palpite.id,
-            usuarioId: usuarioLogado.id,
-            jogoId: Number(jogoId),
-            golsCasa: Number(palpite.golsCasa),
-            golsFora: Number(palpite.golsFora),
-          }));
+                id: palpite.id,
+                usuarioId: usuarioLogado.id,
+                jogoId: Number(jogoId),
+                salaId: Number(salaId),
+                golsCasa: Number(palpite.golsCasa),
+                golsFora: Number(palpite.golsFora),
+            }));
 
         if (palpitesParaSalvar.length === 0) {
           alert("Nenhum palpite válido para salvar. Só é possível palpitar em jogos agendados.");
@@ -186,7 +210,7 @@ function App() {
 
         setPalpites(novosPalpites);
         alert("Palpites salvos com sucesso!");
-        const rankingResponse = await api.get("/palpites/ranking");
+        const rankingResponse = await api.get(`/palpites/ranking/sala/${salaId}`);
         setRanking(rankingResponse.data);
       } catch (error) {
         console.error("Erro ao salvar palpites:", error);
@@ -208,7 +232,7 @@ function App() {
             return;
           }
 
-          const response = await api.get(`/palpites/jogo/${jogoId}`);
+          const response = await api.get(`/palpites/jogo/${jogoId}/sala/${salaId}`);
 
           setPalpitesPorJogo({
             ...palpitesPorJogo,
@@ -271,8 +295,46 @@ function jogoPodeReceberPalpite(jogo) {
 }
 
   if (!usuarioLogado) {
-    return <LoginCadastro onLogin={setUsuarioLogado} />;
+    return (
+      <LoginCadastro
+        onLogin={(usuario) => {
+          localStorage.removeItem("salaSelecionada");
+          localStorage.removeItem("salaId");
+          localStorage.removeItem("salaNome");
+
+          setSalaSelecionada(null);
+          setSalaId(null);
+          setUsuarioLogado(usuario);
+        }}
+      />
+    );
   }
+
+   if (!salaSelecionada) {
+  return (
+    <Salas
+      usuarioLogado={usuarioLogado}
+     onSelecionarSala={(sala) => {
+        const salaFormatada = {
+          ...sala,
+          id: Number(sala.id),
+        };
+
+        localStorage.setItem("salaSelecionada", JSON.stringify(salaFormatada));
+        localStorage.setItem("salaId", salaFormatada.id);
+        localStorage.setItem("salaNome", salaFormatada.nome);
+
+        setRanking([]);
+        setPalpites({});
+        setPalpitesPorJogo({});
+        setJogoAbertoId(null);
+
+        setSalaSelecionada(salaFormatada);
+        setSalaId(salaFormatada.id);
+      }}
+    />
+  );
+}
 
   const jogosFiltrados = jogos
   .filter((jogo) => {
@@ -287,7 +349,7 @@ function jogoPodeReceberPalpite(jogo) {
     <main className="container">
       <header className="topo-app">
         <h1>⚽ Papitômetro 2026</h1>
-
+        <p>🏆 {localStorage.getItem("salaNome")}</p>
         <div className="usuario-info">
           <span>{usuarioLogado.nome}</span>
 

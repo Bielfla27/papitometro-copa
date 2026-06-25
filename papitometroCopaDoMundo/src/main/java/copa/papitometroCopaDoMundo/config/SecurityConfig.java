@@ -28,6 +28,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/usuarios").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/login").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/salas/**").permitAll()
 
                         // libera temporariamente para testar
                         .requestMatchers(HttpMethod.GET, "/jogos/**").permitAll()

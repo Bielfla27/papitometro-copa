@@ -9,61 +9,56 @@ function LoginCadastro({ onLogin }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
+  function limparSalaSelecionada() {
+    localStorage.removeItem("salaSelecionada");
+    localStorage.removeItem("salaId");
+    localStorage.removeItem("salaNome");
+  }
+
   async function cadastrarUsuario(e) {
-        e.preventDefault();
-
-        try {
-            const response = await api.post("/usuarios", {
-            nome,
-            email,
-            senha,
-            });
-
-            localStorage.setItem("usuarioLogado", JSON.stringify(response.data));
-            onLogin(response.data);
-        } catch (error) {
-            console.error(error);
-            alert("Erro ao cadastrar usuário.");
-        }
-    }
-
-   /* function entrar(e) {
-        e.preventDefault();
-
-        // Login simples temporário
-        const usuarioFake = {
-        id: 1,
-        nome: nome || "Gabriel",
-        email,
-        };
-
-        localStorage.setItem("usuarioLogado", JSON.stringify(usuarioFake));
-        onLogin(usuarioFake);
-    }*/
-
-
-     async function entrar(e) {
     e.preventDefault();
 
     try {
-        const response = await api.post("/usuarios/login", {
+      const response = await api.post("/usuarios", {
+        nome,
         email,
         senha,
-        });
+      });
 
-        localStorage.setItem("usuarioLogado", JSON.stringify(response.data));
-        onLogin(response.data);
+      localStorage.setItem("usuarioLogado", JSON.stringify(response.data));
+      limparSalaSelecionada();
+
+      onLogin(response.data);
     } catch (error) {
-        console.error(error);
-        alert("Email ou senha inválidos.");
+      console.error(error);
+      alert("Erro ao cadastrar usuário.");
     }
+  }
+
+  async function entrar(e) {
+    e.preventDefault();
+
+    try {
+      const response = await api.post("/usuarios/login", {
+        email,
+        senha,
+      });
+
+      localStorage.setItem("usuarioLogado", JSON.stringify(response.data));
+      limparSalaSelecionada();
+
+      onLogin(response.data);
+    } catch (error) {
+      console.error(error);
+      alert("Email ou senha inválidos.");
     }
+  }
 
   return (
     <main className="auth-page">
       <section className="auth-card">
         <div className="auth-logo">
-             <img src={logoCopa} alt="FelixPlay Copa" />
+          <img src={logoCopa} alt="FelixPlay Copa" />
         </div>
 
         <h1>Papitômetro 2026</h1>
@@ -73,6 +68,7 @@ function LoginCadastro({ onLogin }) {
           <button
             className={!modoCadastro ? "active" : ""}
             onClick={() => setModoCadastro(false)}
+            type="button"
           >
             Login
           </button>
@@ -80,6 +76,7 @@ function LoginCadastro({ onLogin }) {
           <button
             className={modoCadastro ? "active" : ""}
             onClick={() => setModoCadastro(true)}
+            type="button"
           >
             Cadastro
           </button>
