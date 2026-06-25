@@ -1,0 +1,265 @@
+.salas-container {
+  min-height: 100vh;
+  padding: 28px 20px 44px;
+  background: radial-gradient(circle at top, #2a2412, #111111 42%);
+  color: #ffffff;
+}
+
+.salas-content {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.salas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+
+.salas-eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.salas-header h1 {
+  color: #d4a72c;
+  font-size: 34px;
+  line-height: 1.15;
+}
+
+.salas-user {
+  min-height: 44px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(212, 167, 44, 0.35);
+  border-radius: 8px;
+  background: rgba(17, 17, 17, 0.72);
+  color: #ddd;
+  font-weight: bold;
+}
+
+.salas-acoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.sala-box {
+  background: #1a1a1a;
+  border: 1px solid #2b2b2b;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+}
+
+.sala-box-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.sala-icone {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d4a72c;
+  color: #111111;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.sala-box h2 {
+  color: #ffffff;
+  font-size: 21px;
+}
+
+.sala-box input {
+  width: 100%;
+  height: 48px;
+  margin-bottom: 14px;
+  padding: 0 14px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #101010;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.sala-box input:focus {
+  outline: none;
+  border-color: #d4a72c;
+}
+
+.sala-box button {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 10px;
+  background: #c99b22;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: 0.2s;
+}
+
+.sala-box button:hover:not(:disabled) {
+  background: #d4a72c;
+}
+
+.sala-box button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.salas-lista-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.titulo-suas-salas {
+  color: #d4a72c;
+  font-size: 24px;
+}
+
+.salas-lista-topo span {
+  color: #aaa;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.salas-alerta,
+.salas-vazio {
+  padding: 18px;
+  border: 1px solid #333;
+  border-radius: 10px;
+  background: #151515;
+  color: #aaa;
+  text-align: center;
+}
+
+.salas-alerta {
+  margin-bottom: 16px;
+  border-color: rgba(220, 38, 38, 0.45);
+  color: #fecaca;
+}
+
+.lista-salas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.card-sala {
+  min-height: 148px;
+  padding: 18px;
+  border: 1px solid #2b2b2b;
+  border-radius: 12px;
+  background: #101010;
+  color: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.2s;
+}
+
+.card-sala:hover {
+  transform: translateY(-4px);
+  border-color: #d4a72c;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
+}
+
+.card-sala:focus-visible {
+  outline: 2px solid #d4a72c;
+  outline-offset: 3px;
+}
+
+.card-sala-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  margin-bottom: 18px;
+  padding: 0 10px;
+  border-radius: 20px;
+  background: #1f2937;
+  color: #d4a72c;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.card-sala h3 {
+  margin-bottom: 10px;
+  font-size: 21px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.card-sala p {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.card-sala strong {
+  color: #d4a72c;
+  letter-spacing: 1px;
+}
+
+.salas-vazio {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 720px) {
+  .salas-container {
+    padding: 22px 14px 34px;
+  }
+
+  .salas-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .salas-header h1 {
+    font-size: 30px;
+  }
+
+  .salas-user {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .salas-acoes {
+    grid-template-columns: 1fr;
+  }
+
+  .sala-box {
+    padding: 18px;
+  }
+
+  .salas-lista-topo {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .lista-salas {
+    grid-template-columns: 1fr;
+  }
+}

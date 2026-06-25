@@ -42,19 +42,40 @@ public class PalpiteController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
-    
+
     @GetMapping("/usuario/{usuarioId}")
     public List<PalpiteDTO> findByUsuario(@PathVariable Long usuarioId) {
         return service.findByUsuario(usuarioId);
     }
-    
+
+    @GetMapping("/usuario/{usuarioId}/sala/{salaId}")
+    public List<PalpiteDTO> findByUsuarioAndSala(
+            @PathVariable Long usuarioId,
+            @PathVariable Long salaId) {
+
+        return service.findByUsuarioAndSala(usuarioId, salaId);
+    }
+
     @GetMapping("/ranking")
     public List<RankingDTO> buscarRanking() {
         return service.buscarRanking();
     }
-    
+
+    @GetMapping("/ranking/sala/{salaId}")
+    public List<RankingDTO> buscarRankingPorSala(@PathVariable Long salaId) {
+        return service.buscarRankingPorSala(salaId);
+    }
+
     @GetMapping("/jogo/{jogoId}")
     public List<PalpiteJogoDTO> buscarPalpitesPorJogo(@PathVariable Long jogoId) {
         return service.buscarPalpitesPorJogo(jogoId);
+    }
+
+    @GetMapping("/jogo/{jogoId}/sala/{salaId}")
+    public List<PalpiteJogoDTO> buscarPalpitesPorJogoESala(
+            @PathVariable Long jogoId,
+            @PathVariable Long salaId) {
+
+        return service.buscarPalpitesPorJogoESala(jogoId, salaId);
     }
 }

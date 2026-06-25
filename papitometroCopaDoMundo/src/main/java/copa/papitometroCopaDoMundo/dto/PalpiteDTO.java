@@ -16,7 +16,8 @@ public class PalpiteDTO {
     private Long jogoId;
     private String timeCasa;
     private String timeFora;
-
+    private Long salaId;
+    
     public PalpiteDTO() {
     }
     
@@ -32,6 +33,10 @@ public class PalpiteDTO {
         jogoId = entity.getJogo().getId();
         timeCasa = entity.getJogo().getTimeCasa();
         timeFora = entity.getJogo().getTimeFora();
+        
+        if (entity.getSala() != null) {
+            this.salaId = entity.getSala().getId();
+        }
     }
 
     public Long getId() {
@@ -104,5 +109,13 @@ public class PalpiteDTO {
 
     public void setTimeFora(String timeFora) {
         this.timeFora = timeFora;
+    }
+    
+    public Long getSalaId() {
+        return salaId;
+    }
+
+    public void setSalaId(Long salaId) {
+        this.salaId = salaId;
     }
 }

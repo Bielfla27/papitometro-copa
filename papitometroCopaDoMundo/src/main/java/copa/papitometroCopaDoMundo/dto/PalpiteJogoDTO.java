@@ -15,6 +15,8 @@ public class PalpiteJogoDTO {
         this.golsFora = golsFora;
         this.pontos = pontos;
     }
+    
+    
 
 	public Long getUsuarioId() {
 		return usuarioId;

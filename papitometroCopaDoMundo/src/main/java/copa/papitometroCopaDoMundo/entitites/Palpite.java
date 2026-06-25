@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 @Table(
     name = "tb_palpite",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"usuario_id", "jogo_id"})
+        @UniqueConstraint(columnNames = {"usuario_id", "jogo_id", "sala_id"})
     }
 )
 public class Palpite {
@@ -30,6 +30,10 @@ public class Palpite {
     @ManyToOne
     @JoinColumn(name = "jogo_id", nullable = false)
     private Jogo jogo;
+    
+    @ManyToOne
+    @JoinColumn(name = "sala_id")
+    private Sala sala;
 
     public Palpite() {
     }
@@ -89,5 +93,13 @@ public class Palpite {
 
     public void setJogo(Jogo jogo) {
         this.jogo = jogo;
+    }
+    
+    public Sala getSala() {
+        return sala;
+    }
+
+    public void setSala(Sala sala) {
+        this.sala = sala;
     }
 }
