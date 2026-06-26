@@ -622,7 +622,6 @@ function jogoPodeReceberPalpite(jogo) {
               <div className="ranking-participante">
                 <strong>
                   {item.nome}
-                  {item.usuarioId === usuarioLogado.id && <small> você</small>}
                 </strong>
 
                 <div className="ranking-metricas">

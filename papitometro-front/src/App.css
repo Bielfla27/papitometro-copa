@@ -350,6 +350,41 @@ body {
     margin: 0 auto;
   }
 
+  .ranking h2 {
+    text-align: center;
+  }
+
+  .ranking-row {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .ranking-posicao {
+    padding-top: 0;
+  }
+
+  .ranking-participante strong {
+    text-align: center;
+  }
+
+  .ranking-metricas {
+    white-space: normal;
+    text-align: center;
+  }
+
+  .ranking-pontos {
+    text-align: center;
+  }
+
+  .ranking-row-logado {
+    border-left: none;
+    border-top: 4px solid #d4a72c;
+    padding-left: 0;
+    padding-top: 14px;
+  }
+
   .palpite-amigo {
     grid-template-columns: 1fr;
     text-align: center;
