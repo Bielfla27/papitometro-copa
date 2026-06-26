@@ -1,72 +1,131 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./Salas.css";
 
-export default function Salas({ usuarioLogado, onSelecionarSala }) {
+function getMensagemErro(error, fallback) {
+  return (
+    error.response?.data?.message ||
+    error.response?.data?.error ||
+    error.response?.data ||
+    fallback
+  );
+}
+
+export default function Salas({ usuarioLogado, onSelecionarSala, onLogout }) {
   const [salas, setSalas] = useState([]);
   const [nomeSala, setNomeSala] = useState("");
   const [codigoSala, setCodigoSala] = useState("");
   const [carregando, setCarregando] = useState(true);
+  const [criando, setCriando] = useState(false);
+  const [entrando, setEntrando] = useState(false);
   const [mensagemErro, setMensagemErro] = useState("");
 
   const usuarioId = usuarioLogado.id;
 
-  const buscarMinhasSalas = useCallback(async () => {
+  async function buscarMinhasSalas() {
+    setCarregando(true);
+    setMensagemErro("");
+
     try {
-      setCarregando(true);
-      setMensagemErro("");
-
       const response = await api.get(`/salas/minhas/${usuarioId}`);
-
       setSalas(response.data);
     } catch (error) {
       console.error("Erro ao buscar salas:", error);
-      setMensagemErro("Não foi possível carregar suas salas.");
+      setMensagemErro(getMensagemErro(error, "Não foi possível carregar suas salas."));
+      setSalas([]);
     } finally {
       setCarregando(false);
     }
-  }, [usuarioId]);
+  }
 
   useEffect(() => {
-    Promise.resolve().then(buscarMinhasSalas);
-  }, [buscarMinhasSalas]);
+    let ativo = true;
+
+    async function carregar() {
+      setCarregando(true);
+      setMensagemErro("");
+
+      try {
+        const response = await api.get(`/salas/minhas/${usuarioId}`);
+
+        if (ativo) {
+          setSalas(response.data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar salas:", error);
+
+        if (ativo) {
+          setMensagemErro(getMensagemErro(error, "Não foi possível carregar suas salas."));
+          setSalas([]);
+        }
+      } finally {
+        if (ativo) {
+          setCarregando(false);
+        }
+      }
+    }
+
+    carregar();
+
+    return () => {
+      ativo = false;
+    };
+  }, [usuarioId]);
 
   async function criarSala(event) {
     event.preventDefault();
 
-    if (!nomeSala.trim()) return;
+    const nome = nomeSala.trim();
+    if (!nome || criando) return;
 
-    const response = await api.post("/salas", {
-      nome: nomeSala.trim(),
-      usuarioId: Number(usuarioId),
-    });
+    setCriando(true);
+    setMensagemErro("");
 
-    localStorage.setItem("salaId", response.data.id);
-    localStorage.setItem("salaNome", response.data.nome);
+    try {
+      const response = await api.post("/salas", {
+        nome,
+        usuarioId: Number(usuarioId),
+      });
 
-    buscarMinhasSalas();
-    setNomeSala("");
+      localStorage.setItem("salaId", response.data.id);
+      localStorage.setItem("salaNome", response.data.nome);
+
+      setNomeSala("");
+      await buscarMinhasSalas();
+    } catch (error) {
+      console.error("Erro ao criar sala:", error);
+      setMensagemErro(getMensagemErro(error, "Não foi possível criar a sala."));
+    } finally {
+      setCriando(false);
+    }
   }
 
   async function entrarSala(event) {
     event.preventDefault();
 
-    if (!codigoSala.trim()) return;
+    const codigo = codigoSala.trim().toUpperCase();
+    if (!codigo || entrando) return;
 
-    const response = await api.post("/salas/entrar", {
-      codigo: codigoSala.trim(),
-      usuarioId: Number(usuarioId),
-    });
+    setEntrando(true);
+    setMensagemErro("");
 
-    localStorage.setItem("salaId", response.data.id);
-    localStorage.setItem("salaNome", response.data.nome);
+    try {
+      const response = await api.post("/salas/entrar", {
+        codigo,
+        usuarioId: Number(usuarioId),
+      });
 
-    buscarMinhasSalas();
-    setCodigoSala("");
-  }
+      localStorage.setItem("salaId", response.data.id);
+      localStorage.setItem("salaNome", response.data.nome);
 
-  function selecionarSala(sala) {
-    onSelecionarSala(sala);
+      setCodigoSala("");
+      await buscarMinhasSalas();
+    } catch (error) {
+      console.error("Erro ao entrar na sala:", error);
+      setMensagemErro(getMensagemErro(error, "Não foi possível entrar nessa sala."));
+    } finally {
+      setEntrando(false);
+    }
   }
 
   return (
@@ -78,8 +137,14 @@ export default function Salas({ usuarioLogado, onSelecionarSala }) {
             <h1>Minhas salas</h1>
           </div>
 
-          <div className="salas-user">
-            <span>{usuarioLogado.nome}</span>
+          <div className="salas-header-actions">
+            <div className="salas-user">
+              <span>{usuarioLogado.nome}</span>
+            </div>
+
+            <button className="salas-sair" type="button" onClick={onLogout}>
+              Sair
+            </button>
           </div>
         </header>
 
@@ -95,10 +160,11 @@ export default function Salas({ usuarioLogado, onSelecionarSala }) {
               placeholder="Nome da sala"
               value={nomeSala}
               onChange={(e) => setNomeSala(e.target.value)}
+              disabled={criando}
             />
 
-            <button type="submit" disabled={!nomeSala.trim()}>
-              Criar sala
+            <button type="submit" disabled={!nomeSala.trim() || criando}>
+              {criando ? "Criando..." : "Criar sala"}
             </button>
           </form>
 
@@ -113,10 +179,11 @@ export default function Salas({ usuarioLogado, onSelecionarSala }) {
               placeholder="Código da sala"
               value={codigoSala}
               onChange={(e) => setCodigoSala(e.target.value.toUpperCase())}
+              disabled={entrando}
             />
 
-            <button type="submit" disabled={!codigoSala.trim()}>
-              Entrar
+            <button type="submit" disabled={!codigoSala.trim() || entrando}>
+              {entrando ? "Entrando..." : "Entrar"}
             </button>
           </form>
         </section>
@@ -140,7 +207,7 @@ export default function Salas({ usuarioLogado, onSelecionarSala }) {
               <button
                 key={sala.id}
                 className="card-sala"
-                onClick={() => selecionarSala(sala)}
+                onClick={() => onSelecionarSala(sala)}
                 type="button"
               >
                 <span className="card-sala-tag">Sala</span>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import api from "./services/api";
 import LoginCadastro from "./pages/LoginCadastro";
@@ -37,14 +37,6 @@ while (dataAtual <= fim) {
   dataAtual.setDate(dataAtual.getDate() + 1);
 }
 
-const rankingMock = [
-  { nome: "Gabriel", pontos: 0 },
-  { nome: "Pedro", pontos: 0 },
-  { nome: "Theo", pontos: 0 },
-  { nome: "Davi", pontos: 0 },
-  { nome: "Hudson", pontos: 0 },
-];
-
 function getDataInicial() {
   const hoje = formatarDataLocal(new Date());
 
@@ -63,6 +55,7 @@ function App() {
   const [dataSelecionada, setDataSelecionada] = useState(getDataInicial());
   const [palpitesPorJogo, setPalpitesPorJogo] = useState({});
   const [jogoAbertoId, setJogoAbertoId] = useState(null);
+  const dataSelecionadaRef = useRef(null);
 
   const [salaId, setSalaId] = useState(() => {
   const salaSalva = localStorage.getItem("salaSelecionada");
@@ -81,8 +74,6 @@ function App() {
 
   useEffect(() => {
       if (!salaId) return;
-
-      setRanking([]);
 
       api
         .get(`/palpites/ranking/sala/${salaId}`)
@@ -108,8 +99,6 @@ function App() {
   useEffect(() => {
   if (!usuarioLogado?.id || !salaId) return;
 
-  setPalpites({});
-
   api
     .get(`/palpites/usuario/${usuarioLogado.id}/sala/${salaId}`)
     .then((response) => {
@@ -131,6 +120,14 @@ function App() {
     });
 }, [usuarioLogado, salaId]);
 
+  useEffect(() => {
+    dataSelecionadaRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [dataSelecionada, salaSelecionada]);
+
   function logout() {
     localStorage.removeItem("usuarioLogado");
     localStorage.removeItem("salaSelecionada");
@@ -140,6 +137,19 @@ function App() {
     setUsuarioLogado(null);
     setSalaSelecionada(null);
     setSalaId(null);
+  }
+
+  function voltarParaSalas() {
+    localStorage.removeItem("salaSelecionada");
+    localStorage.removeItem("salaId");
+    localStorage.removeItem("salaNome");
+
+    setSalaSelecionada(null);
+    setSalaId(null);
+    setRanking([]);
+    setPalpites({});
+    setPalpitesPorJogo({});
+    setJogoAbertoId(null);
   }
 
   function handlePalpite(jogoId, campo, valor) {
@@ -314,6 +324,7 @@ function jogoPodeReceberPalpite(jogo) {
   return (
     <Salas
       usuarioLogado={usuarioLogado}
+      onLogout={logout}
      onSelecionarSala={(sala) => {
         const salaFormatada = {
           ...sala,
@@ -348,10 +359,17 @@ function jogoPodeReceberPalpite(jogo) {
   return (
     <main className="container">
       <header className="topo-app">
-        <h1>⚽ Papitômetro 2026</h1>
-        <p>🏆 {localStorage.getItem("salaNome")}</p>
+        <div className="topo-identidade">
+          <h1>{"\u26BD"} Papitômetro 2026</h1>
+          <p>{"\u{1F3C6}"} {localStorage.getItem("salaNome")}</p>
+        </div>
+
         <div className="usuario-info">
           <span>{usuarioLogado.nome}</span>
+
+          <button className="salas-button" onClick={voltarParaSalas}>
+            Salas
+          </button>
 
           <button className="logout-button" onClick={logout}>
             Sair
@@ -363,6 +381,7 @@ function jogoPodeReceberPalpite(jogo) {
         {datas.map((data) => (
           <button
             key={data.dataCompleta}
+            ref={dataSelecionada === data.dataCompleta ? dataSelecionadaRef : null}
             onClick={() => setDataSelecionada(data.dataCompleta)}
             className={`date-card ${
               dataSelecionada === data.dataCompleta ? "active" : ""
@@ -428,7 +447,7 @@ function jogoPodeReceberPalpite(jogo) {
                     onClick={() => carregarPalpitesDoJogo(jogo.id)}
                     title="Ver palpites"
                   >
-                    👥
+                    {"\u{1F465}"}
                   </button>
                 </div>
 
@@ -523,32 +542,32 @@ function jogoPodeReceberPalpite(jogo) {
         </section>
 
         <aside className="ranking">
-          <h2>🏆 RANKING</h2>
+          <h2>RANKING</h2>
 
           {ranking.map((item, index) => (
-                <div
-                  className={`ranking-row ${
-                    item.usuarioId === usuarioLogado.id
-                      ? "ranking-row-logado"
-                      : ""
-                  }`}
-                  key={item.nome}
-                >
-              <span>
-                {index === 0
-                  ? "🥇"
-                  : index === 1
-                  ? "🥈"
-                  : index === 2
-                  ? "🥉"
-                  : `${index + 1}º`}
-              </span>
-              <strong>
-                {item.nome}
+            <div
+              className={`ranking-row ${
+                item.usuarioId === usuarioLogado.id ? "ranking-row-logado" : ""
+              }`}
+              key={item.usuarioId ?? item.nome}
+            >
+              <span className="ranking-posicao">{index + 1}º</span>
 
-                {item.usuarioId === usuarioLogado.id && " 👈"}
-              </strong>
-              <b>{item.pontos}</b>
+              <div className="ranking-participante">
+                <strong>
+                  {item.nome}
+                  {item.usuarioId === usuarioLogado.id && <small> você</small>}
+                </strong>
+
+                <div className="ranking-metricas">
+                  {item.placaresExatos ?? 0} exatos | {item.acertos ?? 0} acertos | {item.palpites ?? 0} palpites
+                </div>
+              </div>
+
+              <div className="ranking-pontos">
+                <b>{item.pontos ?? 0}</b>
+                <span>pts</span>
+              </div>
             </div>
           ))}
         </aside>
@@ -558,3 +577,5 @@ function jogoPodeReceberPalpite(jogo) {
 }
 
 export default App;
+
+

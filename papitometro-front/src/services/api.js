@@ -1,17 +1,22 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://papitometro-copa.onrender.com",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  timeout: 15000,
 });
 
 api.interceptors.request.use((config) => {
   const usuarioLogado = localStorage.getItem("usuarioLogado");
 
   if (usuarioLogado) {
-    const usuario = JSON.parse(usuarioLogado);
+    try {
+      const usuario = JSON.parse(usuarioLogado);
 
-    if (usuario.token) {
-      config.headers.Authorization = `Bearer ${usuario.token}`;
+      if (usuario.token) {
+        config.headers.Authorization = `Bearer ${usuario.token}`;
+      }
+    } catch {
+      localStorage.removeItem("usuarioLogado");
     }
   }
 

@@ -30,11 +30,19 @@ public interface PalpiteRepository extends JpaRepository<Palpite, Long> {
 		        SELECT new copa.papitometroCopaDoMundo.dto.RankingDTO(
 		            p.usuario.id,
 		            p.usuario.nome,
-		            COALESCE(SUM(p.pontos), 0)
+		            COALESCE(SUM(p.pontos), 0),
+		            COALESCE(SUM(CASE WHEN p.pontos = 3 THEN 1 ELSE 0 END), 0),
+		            COALESCE(SUM(CASE WHEN p.pontos > 0 THEN 1 ELSE 0 END), 0),
+		            COUNT(p.id)
 		        )
 		        FROM Palpite p
 		        GROUP BY p.usuario.id, p.usuario.nome
-		        ORDER BY COALESCE(SUM(p.pontos), 0) DESC
+		        ORDER BY
+		            COALESCE(SUM(p.pontos), 0) DESC,
+		            COALESCE(SUM(CASE WHEN p.pontos = 3 THEN 1 ELSE 0 END), 0) DESC,
+		            COALESCE(SUM(CASE WHEN p.pontos > 0 THEN 1 ELSE 0 END), 0) DESC,
+		            COUNT(p.id) DESC,
+		            p.usuario.nome ASC
 		    """)
 		    List<RankingDTO> buscarRanking();
 	 
@@ -58,14 +66,25 @@ public interface PalpiteRepository extends JpaRepository<Palpite, Long> {
 	  
 	  @Query("""
 			    SELECT new copa.papitometroCopaDoMundo.dto.RankingDTO(
-			        p.usuario.id,
-			        p.usuario.nome,
-			        SUM(p.pontos)
+			        us.usuario.id,
+			        us.usuario.nome,
+			        COALESCE(SUM(p.pontos), 0),
+			        COALESCE(SUM(CASE WHEN p.pontos = 3 THEN 1 ELSE 0 END), 0),
+			        COALESCE(SUM(CASE WHEN p.pontos > 0 THEN 1 ELSE 0 END), 0),
+			        COUNT(p.id)
 			    )
-			    FROM Palpite p
-			    WHERE p.sala.id = :salaId
-			    GROUP BY p.usuario.id, p.usuario.nome
-			    ORDER BY SUM(p.pontos) DESC
+			    FROM UsuarioSala us
+			    LEFT JOIN Palpite p
+			      ON p.usuario = us.usuario
+			     AND p.sala = us.sala
+			    WHERE us.sala.id = :salaId
+			    GROUP BY us.usuario.id, us.usuario.nome
+			    ORDER BY
+			        COALESCE(SUM(p.pontos), 0) DESC,
+			        COALESCE(SUM(CASE WHEN p.pontos = 3 THEN 1 ELSE 0 END), 0) DESC,
+			        COALESCE(SUM(CASE WHEN p.pontos > 0 THEN 1 ELSE 0 END), 0) DESC,
+			        COUNT(p.id) DESC,
+			        us.usuario.nome ASC
 			""")
 			List<RankingDTO> buscarRankingPorSala(@Param("salaId") Long salaId);
 	  

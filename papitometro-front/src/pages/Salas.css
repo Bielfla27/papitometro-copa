@@ -35,6 +35,12 @@
   line-height: 1.15;
 }
 
+.salas-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .salas-user {
   min-height: 44px;
   padding: 0 16px;
@@ -45,6 +51,21 @@
   background: rgba(17, 17, 17, 0.72);
   color: #ddd;
   font-weight: bold;
+}
+
+.salas-sair {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(220, 38, 38, 0.55);
+  border-radius: 8px;
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.salas-sair:hover {
+  background: rgba(220, 38, 38, 0.25);
 }
 
 .salas-acoes {
@@ -241,8 +262,13 @@
   }
 
   .salas-user {
-    width: 100%;
     justify-content: center;
+  }
+
+  .salas-header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
   }
 
   .salas-acoes {
