@@ -1,7 +1,13 @@
 import axios from "axios";
 
+const apiUrl =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://papitometro-copa.onrender.com"
+    : "http://localhost:8080");
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: apiUrl,
   timeout: 15000,
 });
 

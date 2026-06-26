@@ -135,6 +135,9 @@ export default function Salas({ usuarioLogado, onSelecionarSala, onLogout }) {
           <div>
             <span className="salas-eyebrow">Papitômetro 2026</span>
             <h1>Minhas salas</h1>
+            <p className="salas-subtitulo">
+              Crie uma sala ou entre com um código para jogar com amigos.
+            </p>
           </div>
 
           <div className="salas-header-actions">

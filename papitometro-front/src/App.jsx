@@ -55,7 +55,10 @@ function App() {
   const [dataSelecionada, setDataSelecionada] = useState(getDataInicial());
   const [palpitesPorJogo, setPalpitesPorJogo] = useState({});
   const [jogoAbertoId, setJogoAbertoId] = useState(null);
+  const [menuAberto, setMenuAberto] = useState(false);
   const dataSelecionadaRef = useRef(null);
+  const jogosRef = useRef(null);
+  const rankingRef = useRef(null);
 
   const [salaId, setSalaId] = useState(() => {
   const salaSalva = localStorage.getItem("salaSelecionada");
@@ -140,6 +143,7 @@ function App() {
   }
 
   function voltarParaSalas() {
+    setMenuAberto(false);
     localStorage.removeItem("salaSelecionada");
     localStorage.removeItem("salaId");
     localStorage.removeItem("salaNome");
@@ -150,6 +154,25 @@ function App() {
     setPalpites({});
     setPalpitesPorJogo({});
     setJogoAbertoId(null);
+  }
+
+  function fecharMenu() {
+    setMenuAberto(false);
+  }
+
+  function irParaJogos() {
+    setMenuAberto(false);
+    jogosRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function irParaRanking() {
+    setMenuAberto(false);
+    rankingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function sairPeloMenu() {
+    setMenuAberto(false);
+    logout();
   }
 
   function handlePalpite(jogoId, campo, valor) {
@@ -361,21 +384,64 @@ function jogoPodeReceberPalpite(jogo) {
       <header className="topo-app">
         <div className="topo-identidade">
           <h1>{"\u26BD"} Papitômetro 2026</h1>
-          <p>{"\u{1F3C6}"} {localStorage.getItem("salaNome")}</p>
+          <div className="topo-meta">
+            <p>
+              {"\u{1F3C6}"} <span>Sala:</span>{" "}
+              <strong>{localStorage.getItem("salaNome")}</strong>
+            </p>
+            <p>
+              {"\u{1F464}"} <strong>{usuarioLogado.nome}</strong>
+            </p>
+          </div>
         </div>
 
-        <div className="usuario-info">
-          <span>{usuarioLogado.nome}</span>
-
-          <button className="salas-button" onClick={voltarParaSalas}>
-            Salas
-          </button>
-
-          <button className="logout-button" onClick={logout}>
-            Sair
-          </button>
-        </div>
+        <button
+          className="menu-button"
+          type="button"
+          onClick={() => setMenuAberto(true)}
+          aria-label="Abrir menu"
+        >
+          ☰
+        </button>
       </header>
+
+      {menuAberto && (
+        <div className="menu-overlay" onClick={fecharMenu}>
+          <aside
+            className="menu-drawer"
+            aria-label="Menu"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="menu-topo">
+              <h2>☰ Menu</h2>
+              <button type="button" onClick={fecharMenu} aria-label="Fechar menu">
+                ×
+              </button>
+            </div>
+
+            <div className="menu-perfil">
+              <strong>{"\u{1F464}"} {usuarioLogado.nome}</strong>
+              <span>{usuarioLogado.email}</span>
+            </div>
+
+            <nav className="menu-nav">
+              <button type="button" onClick={irParaJogos}>
+                {"\u{1F3E0}"} Jogos
+              </button>
+              <button type="button" onClick={voltarParaSalas}>
+                {"\u{1F3C6}"} Minhas Salas
+              </button>
+              <button type="button" onClick={irParaRanking}>
+                {"\u{1F4CA}"} Ranking
+              </button>
+            </nav>
+
+            <button className="menu-sair" type="button" onClick={sairPeloMenu}>
+              {"\u{1F6AA}"} Sair
+            </button>
+          </aside>
+        </div>
+      )}
 
       <div className="date-scroll">
         {datas.map((data) => (
@@ -395,7 +461,7 @@ function jogoPodeReceberPalpite(jogo) {
       </div>
 
       <div className="content">
-        <section className="games-area">
+        <section className="games-area" ref={jogosRef}>
           <h2 className="titulo-data">
             {new Date(dataSelecionada + "T00:00:00")
               .toLocaleDateString("pt-BR", {
@@ -541,7 +607,7 @@ function jogoPodeReceberPalpite(jogo) {
           </button>
         </section>
 
-        <aside className="ranking">
+        <aside className="ranking" ref={rankingRef}>
           <h2>RANKING</h2>
 
           {ranking.map((item, index) => (
