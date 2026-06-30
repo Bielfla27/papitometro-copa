@@ -108,15 +108,9 @@ public class ImportarJogosService  {
 
                 String status = match.get("status").asText();
 
-                JsonNode fullTime = match.get("score").get("fullTime");
-
-                if (fullTime.get("home") != null && !fullTime.get("home").isNull()) {
-                    golsCasa = fullTime.get("home").asInt();
-                }
-
-                if (fullTime.get("away") != null && !fullTime.get("away").isNull()) {
-                    golsFora = fullTime.get("away").asInt();
-                }
+                JsonNode score = match.get("score");
+                golsCasa = calcularGolsSemPenaltis(score, "home");
+                golsFora = calcularGolsSemPenaltis(score, "away");
 
                 Optional<Jogo> jogoOptional = jogoRepository.findByApiId(apiId);
 
@@ -150,5 +144,40 @@ public class ImportarJogosService  {
             System.out.println("Não foi possível importar os jogos agora.");
             System.out.println("Motivo: " + e.getMessage());
         }
+    }
+
+    private Integer calcularGolsSemPenaltis(JsonNode score, String lado) {
+        if (score == null || score.isNull()) {
+            return null;
+        }
+
+        Integer regularTime = buscarGols(score, "regularTime", lado);
+        Integer extraTime = buscarGols(score, "extraTime", lado);
+
+        if (regularTime != null || extraTime != null) {
+            return valorOuZero(regularTime) + valorOuZero(extraTime);
+        }
+
+        return buscarGols(score, "fullTime", lado);
+    }
+
+    private Integer buscarGols(JsonNode score, String periodo, String lado) {
+        JsonNode periodoNode = score.get(periodo);
+
+        if (periodoNode == null || periodoNode.isNull()) {
+            return null;
+        }
+
+        JsonNode golsNode = periodoNode.get(lado);
+
+        if (golsNode == null || golsNode.isNull()) {
+            return null;
+        }
+
+        return golsNode.asInt();
+    }
+
+    private int valorOuZero(Integer valor) {
+        return valor == null ? 0 : valor;
     }
 }
