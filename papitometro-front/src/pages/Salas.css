@@ -203,7 +203,6 @@
   border-radius: 12px;
   background: #101010;
   color: #ffffff;
-  cursor: pointer;
   text-align: left;
   transition: 0.2s;
 }
@@ -212,11 +211,6 @@
   transform: translateY(-4px);
   border-color: #d4a72c;
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
-}
-
-.card-sala:focus-visible {
-  outline: 2px solid #d4a72c;
-  outline-offset: 3px;
 }
 
 .card-sala-tag {
@@ -241,14 +235,71 @@
   overflow-wrap: anywhere;
 }
 
-.card-sala p {
+.card-sala-codigo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #252525;
+  border-radius: 10px;
+  background: #151515;
+}
+
+.card-sala-codigo span {
   color: #aaa;
   font-size: 14px;
 }
 
-.card-sala strong {
+.card-sala-codigo strong {
   color: #d4a72c;
+  font-size: 15px;
   letter-spacing: 1px;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.card-sala-acoes {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.card-sala-acoes button {
+  min-height: 42px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.card-sala-acoes button:focus-visible {
+  outline: 2px solid #d4a72c;
+  outline-offset: 3px;
+}
+
+.card-sala-copiar {
+  padding: 0 14px;
+  border: 1px solid rgba(212, 167, 44, 0.35);
+  background: rgba(212, 167, 44, 0.08);
+  color: #f5d77b;
+}
+
+.card-sala-copiar:hover {
+  border-color: #d4a72c;
+  background: rgba(212, 167, 44, 0.16);
+}
+
+.card-sala-entrar {
+  padding: 0 18px;
+  border: none;
+  background: #c99b22;
+  color: #ffffff;
+}
+
+.card-sala-entrar:hover {
+  background: #d4a72c;
 }
 
 .salas-vazio {
@@ -388,6 +439,18 @@
   .card-sala h3 {
     margin-bottom: 8px;
     font-size: 19px;
+  }
+
+  .card-sala-codigo {
+    margin-bottom: 14px;
+  }
+
+  .card-sala-acoes {
+    grid-template-columns: 1fr;
+  }
+
+  .card-sala-acoes button {
+    width: 100%;
   }
 
   .salas-alerta,

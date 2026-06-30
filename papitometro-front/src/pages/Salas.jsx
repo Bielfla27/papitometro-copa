@@ -19,6 +19,7 @@ export default function Salas({ usuarioLogado, onSelecionarSala, onLogout }) {
   const [criando, setCriando] = useState(false);
   const [entrando, setEntrando] = useState(false);
   const [mensagemErro, setMensagemErro] = useState("");
+  const [codigoCopiadoId, setCodigoCopiadoId] = useState(null);
 
   const usuarioId = usuarioLogado.id;
 
@@ -128,6 +129,32 @@ export default function Salas({ usuarioLogado, onSelecionarSala, onLogout }) {
     }
   }
 
+  async function copiarCodigoSala(sala) {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(sala.codigo);
+      } else {
+        const campoTemporario = document.createElement("textarea");
+        campoTemporario.value = sala.codigo;
+        campoTemporario.setAttribute("readonly", "");
+        campoTemporario.style.position = "absolute";
+        campoTemporario.style.left = "-9999px";
+        document.body.appendChild(campoTemporario);
+        campoTemporario.select();
+        document.execCommand("copy");
+        document.body.removeChild(campoTemporario);
+      }
+
+      setCodigoCopiadoId(sala.id);
+      window.setTimeout(() => {
+        setCodigoCopiadoId((idAtual) => (idAtual === sala.id ? null : idAtual));
+      }, 1800);
+    } catch (error) {
+      console.error("Erro ao copiar código da sala:", error);
+      setMensagemErro("Não foi possível copiar o código da sala.");
+    }
+  }
+
   return (
     <div className="salas-container">
       <main className="salas-content">
@@ -207,18 +234,33 @@ export default function Salas({ usuarioLogado, onSelecionarSala, onLogout }) {
             <div className="salas-vazio">Nenhuma sala encontrada.</div>
           ) : (
             salas.map((sala) => (
-              <button
-                key={sala.id}
-                className="card-sala"
-                onClick={() => onSelecionarSala(sala)}
-                type="button"
-              >
+              <article key={sala.id} className="card-sala">
                 <span className="card-sala-tag">Sala</span>
                 <h3>{sala.nome}</h3>
-                <p>
-                  Código: <strong>{sala.codigo}</strong>
-                </p>
-              </button>
+
+                <div className="card-sala-codigo">
+                  <span>Código</span>
+                  <strong>{sala.codigo}</strong>
+                </div>
+
+                <div className="card-sala-acoes">
+                  <button
+                    className="card-sala-copiar"
+                    type="button"
+                    onClick={() => copiarCodigoSala(sala)}
+                  >
+                    {codigoCopiadoId === sala.id ? "Copiado!" : "Copiar código"}
+                  </button>
+
+                  <button
+                    className="card-sala-entrar"
+                    type="button"
+                    onClick={() => onSelecionarSala(sala)}
+                  >
+                    Entrar na sala
+                  </button>
+                </div>
+              </article>
             ))
           )}
         </section>
